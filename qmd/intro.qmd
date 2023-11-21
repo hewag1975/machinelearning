@@ -81,11 +81,7 @@ import numpy as np
 
 b = 1
 w = np.array([2, 3, 4])
-x = np.array(
-  [10, 20, 30],
-  [1, 2, 3],
-  [0.1, 0.2, 0.3],
-)
+x = np.array([10, 20, 30])
 
 f = 0
 for j in range(len(w)):
