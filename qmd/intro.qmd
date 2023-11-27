@@ -54,6 +54,24 @@ Example with linear regression:
 * in linear regression **batch** gradient descent is used which uses the entire 
 training data at each step
 
+In linear regression parameters $w$ can be estimated using the normal equation 
+without iterations. This is usually impossible in other models. 
+
+
+
+
+#### Feature scaling
+
+Features varying largely in scale will cause parameters $w$ to also be very 
+different. This can make gradient descent inefficient as the hyperplane gets 
+narrow in one direction. 
+
+Methods of scaling:  
+
+* normalize to maximum: x / max(x)
+* normalize to mean and range: (x - mean(x)) / range(x)
+* normalize to mean and sd: (x - mean(x)) / sd(x)
+
 
 ## Python snippets
 
@@ -71,10 +89,7 @@ np.arrange(10.)
 ## zeros
 np.zeros(10)
 
-
-
 ```
-
 
 * plotting
 
