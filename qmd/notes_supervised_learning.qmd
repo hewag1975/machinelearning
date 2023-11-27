@@ -1,31 +1,13 @@
 ---
-title: "Untitled"
+title: "Notes supervised learning"
 format: html
 editor: source
 editor_options: 
   chunk_output_type: console
 ---
 
-## Machine Learning
 
-Field of study that gives computers the ability to learn without being 
-explicitly programmed. - *Arthur Samuel (1959)*
-
-
-### Unsupervised learning
- 
-* clustering
-* anomaly detection
-* dimensionality reduction
-
-
-### Supervised learning
-
-* regression (model, cost function)
-* gradient descent
-
-
-#### Gradient descent
+## Gradient descent
 
 * random starting parameters
 * select cost function (e.g. MSE, RMSE, ...)
@@ -58,7 +40,7 @@ In linear regression parameters $w$ can be estimated using the normal equation
 without iterations. This is usually impossible in other models. 
 
 
-#### Feature scaling
+## Feature scaling
 
 Features varying largely in scale will cause parameters $w$ to also be very 
 different. This can make gradient descent inefficient as the hyperplane gets 
@@ -71,7 +53,7 @@ Methods of scaling:
 * normalize to mean and sd: (x - mean(x)) / sd(x)
 
 
-#### Convergence of gradient descent
+## Convergence of gradient descent
 
 * plot cost function $J$ against number of iterations
 * ideally $J$ should decrease on every iteration and at some stage flatten out 
@@ -84,7 +66,7 @@ threshold to the decrease of $J$ for one more iteration. I.e. if $J$ is
 decreasing with less than $\epsilon$, convergence is assumed. 
 
 
-#### Choice of learning rate
+## Learning rate
 
 * small $\alpha$: many iterations
 * large $\alpha$: overshooting, i.e. no convergence (ups and downs in the cost 
@@ -93,59 +75,11 @@ function plot)
 with a small number of iterations and plot cost function versus iterations, e.g. 
 
 
-## Python snippets
+## Feature engineering
 
-* numpy
-
-```{python}
-import numpy as np
-
-## integer array 
-np.arange(10)
-
-## float array
-np.arrange(10.)
-
-## zeros
-np.zeros(10)
-
-```
-
-* plotting
-
-```{python}
-#| label: plot-numpy
-import numpy as np
-import matplotlib.pyplot as plt
-
-x = np.array([3, 200])
-y = np.array([200, 500])
-
-plt.scatter(x, y=y, label='sample')
-plt.xlabel('size')
-plt.ylabel('price')
-plt.legend()
-plt.show()
-```
-
-* vectorization
-
-```{python}
-import numpy as np
-
-b = 1
-w = np.array([2, 3, 4])
-x = np.array([10, 20, 30])
-
-f = 0
-for j in range(len(w)):
-  f = f + w[j] * x[j]
-
-f + b
-
-np.dot(w, x) + b
-```
-
+* transforming or combining original features using intuition, prior knowledge
+* polynomial regression to create features from squares or cubes
+* feature scaling may become even more important on combined features
 
 
 

@@ -1,0 +1,25 @@
+---
+title: "Intro Machine Learning"
+format: html
+editor: source
+editor_options: 
+  chunk_output_type: console
+---
+
+
+Field of study that gives computers the ability to learn without being 
+explicitly programmed. - *Arthur Samuel (1959)*
+
+
+### Supervised learning
+
+* regression (model, cost function)
+* gradient descent
+
+
+### Unsupervised learning
+ 
+* clustering
+* anomaly detection
+* dimensionality reduction
+
