@@ -58,8 +58,6 @@ In linear regression parameters $w$ can be estimated using the normal equation
 without iterations. This is usually impossible in other models. 
 
 
-
-
 #### Feature scaling
 
 Features varying largely in scale will cause parameters $w$ to also be very 
@@ -71,6 +69,28 @@ Methods of scaling:
 * normalize to maximum: x / max(x)
 * normalize to mean and range: (x - mean(x)) / range(x)
 * normalize to mean and sd: (x - mean(x)) / sd(x)
+
+
+#### Convergence of gradient descent
+
+* plot cost function $J$ against number of iterations
+* ideally $J$ should decrease on every iteration and at some stage flatten out 
+(convergence)
+* $J$ should never increase as iterations increase, i.e. no bumps, no steady 
+increase
+* number of iterations will vary based on data and model
+* declaration of convergence by setting a minimum $\epsilon$, which sets a 
+threshold to the decrease of $J$ for one more iteration. I.e. if $J$ is 
+decreasing with less than $\epsilon$, convergence is assumed. 
+
+
+#### Choice of learning rate
+
+* small $\alpha$: many iterations
+* large $\alpha$: overshooting, i.e. no convergence (ups and downs in the cost 
+function plot)
+* good practice: test different learning rates (0.001, 0.003, 0.01, 0.03, 0.1, ...) 
+with a small number of iterations and plot cost function versus iterations, e.g. 
 
 
 ## Python snippets
