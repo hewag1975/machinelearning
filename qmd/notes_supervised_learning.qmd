@@ -7,7 +7,9 @@ editor_options:
 ---
 
 
-## Gradient descent
+## Linear regression
+
+### Gradient descent
 
 * random starting parameters
 * select cost function (e.g. MSE, RMSE, ...)
@@ -40,7 +42,7 @@ In linear regression parameters $w$ can be estimated using the normal equation
 without iterations. This is usually impossible in other models. 
 
 
-## Feature scaling
+### Feature scaling
 
 Features varying largely in scale will cause parameters $w$ to also be very 
 different. This can make gradient descent inefficient as the hyperplane gets 
@@ -53,7 +55,7 @@ Methods of scaling:
 * normalize to mean and sd: (x - mean(x)) / sd(x)
 
 
-## Convergence of gradient descent
+### Convergence of gradient descent
 
 * plot cost function $J$ against number of iterations
 * ideally $J$ should decrease on every iteration and at some stage flatten out 
@@ -66,7 +68,7 @@ threshold to the decrease of $J$ for one more iteration. I.e. if $J$ is
 decreasing with less than $\epsilon$, convergence is assumed. 
 
 
-## Learning rate
+### Learning rate
 
 * small $\alpha$: many iterations
 * large $\alpha$: overshooting, i.e. no convergence (ups and downs in the cost 
@@ -75,11 +77,56 @@ function plot)
 with a small number of iterations and plot cost function versus iterations, e.g. 
 
 
-## Feature engineering
+### Feature engineering
 
 * transforming or combining original features using intuition, prior knowledge
 * polynomial regression to create features from squares or cubes
 * feature scaling may become even more important on combined features
 
 
+## Classification with logistic regression
 
+
+
+
+
+## Snippets
+
+```{python}
+import numpy as np
+
+x = np.random.normal(size=100, loc=1, scale=2)
+```
+
+```{r}
+mse = function(x, y, w, b){
+  p = x * w + b
+  se = sum((p - y)^2)
+  mse = se / 2 / length(p)
+  return(mse)
+}
+
+x = 1:100
+y = 0.35 * x + rnorm(100, mean = 0, sd = 8) 
+y = y + 24.85
+
+plot(x, y, pch = 19, ylim = c(0, 100))
+
+w = runif(100, -5, 5)
+b = 5
+b = runif(100, -50, 50)
+
+cost = Map(
+  mse
+  , x = list(x)
+  , y = list(y)
+  , w = w
+  , b = b
+) |> 
+  unlist()
+
+cost = cost[order(w)]
+w = w[order(w)]
+
+plot(w, cost, type = "l")
+```
