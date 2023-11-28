@@ -86,9 +86,30 @@ with a small number of iterations and plot cost function versus iterations, e.g.
 
 ## Classification with logistic regression
 
+* sigmoid function: $g(z)=\frac{1}{1+e^{-z}}$
+* $g(z)$ is between 0 and 1
+* logistic regression applies the sigmoid function to the linear regression 
+through the linear predictor $z=wx+b$
+* output means $P(y=1|x;w,b)$
+
+```{r}
+#| label: sigmoid function
+
+z = seq.int(-5L, to = 5L, length.out = 100)
+g = 1 / (1 + exp(-z))
+plot(z, g, type = "l")
+abline(v = 0, lty = 2)
+abline(h = 0.5, lty = 2)
+```
 
 
+### Decision boundary
 
+* decision boundary is given for $z=0$ or $wx+b=0$ (univariate)
+* using a decision boundary of 0.5 for the sigmoid function corresponds to 
+negative values of $z$ being mapped to 0 and positive values of $z$ being 
+mapped to 1
+* non-linear decision boundaries can be identified e.g. with polynomials
 
 ## Snippets
 
