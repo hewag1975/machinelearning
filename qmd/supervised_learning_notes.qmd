@@ -23,12 +23,12 @@ knitr::opts_knit$set(
 * loss is calculated per observation, sum of all losses gives the cost $J$
 * change parameters to reduce cost $J$ to possible (local) minimum
 * example of gradient descent for cost function $J(w, b)$:
-  * for parameter $w$: $w=w-\alpha\frac{\partial}{\partial w}J(w, b)$ 
-  * for parameter $b$: $B=b-\alpha\frac{\partial}{\partial b}J(w, b)$
-  * with $\alpha$: learning rate, e.g. 0.01, corresponds to the step size
-  * derivative indicates direction and grade of descent per parameter
-  * in case of one parameter, partial derivative is tangent line
-  * in case of two parameters, partial derivatives form a 2D-plane 
+* for parameter $w$: $w=w-\alpha\frac{\partial}{\partial w}J(w, b)$ 
+* for parameter $b$: $B=b-\alpha\frac{\partial}{\partial b}J(w, b)$
+* with $\alpha$: learning rate, e.g. 0.01, corresponds to the step size
+* derivative indicates direction and grade of descent per parameter
+* in case of one parameter, partial derivative is tangent line
+* in case of two parameters, partial derivatives form a 2D-plane 
 * parameters are updated simultaneously
 * near local minimum update steps get smaller by design, even with constant 
 learning rate $\alpha$
@@ -36,9 +36,9 @@ learning rate $\alpha$
 * small leaning rate leads to slow descent (many steps)
 * large leaning rate may miss the minimum and fail to converge
 * stopping criteria:
-  * derivative of cost function is close to zero
-  * small changes of parameters 
-  
+* derivative of cost function is close to zero
+* small changes of parameters 
+
 Example with linear regression:
 
 * partial derivatives
@@ -120,17 +120,17 @@ mapped to 1
 * non-linear decision boundaries can be identified e.g. with polynomials
 
 
-### Cost function
+### Loss and cost function
 
 * Squared error loss function is not suitable for logistic regression 
 * Define loss function $L$ per observation as
 
 $$
 L(f_{w, b}(x^i), y^i)=
-  \begin{cases}
-    -log(f_{w, b}(x^i)), \text{ if } y^i = 1 \\
-    -log(1-f_{w, b}(x^i)), \text{ if } y^i = 0 
-  \end{cases}
+\begin{cases}
+-log(f_{w, b}(x^i)), \text{ if } y^i = 1 \\
+-log(1-f_{w, b}(x^i)), \text{ if } y^i = 0 
+\end{cases}
 $$
 * reminder: loss is per observation, sum of loss is cost $J$
 * cost $J$ for a certain set of parameters is 
@@ -173,44 +173,95 @@ plt.show()
 ```
 
 
-## Snippets
+### Loss and cost function simplified
 
-```{python}
-import numpy as np
+* Given that outputs can only be 0 or 1, the loss function $L$ per observation 
+can be rewritten as
 
-x = np.random.normal(size=100, loc=1, scale=2)
-x
-```
+$$
+L(f_{w, b}(x^i), y^i)=-y^ilog(f_{w, b}(x^i))-(1-y^i)log(1-f_{w, b}(x^i))
+$$
 
-```{r}
-mse = function(x, y, w, b){
-  p = x * w + b
-  se = sum((p - y)^2)
-  mse = se / 2 / length(p)
-  return(mse)
-}
+* if $y^i=1$ this simplifies to $L(f_{w, b}(x^i), y^i)=-log(f_{w, b}(x^i))$
+* if $y^i=0$ this simplifies to $L(f_{w, b}(x^i), y^i)=-log(1-f_{w, b}(x^i))$
 
-x = 1:100
-y = 0.35 * x + rnorm(100, mean = 0, sd = 8) 
-y = y + 24.85
+* Cost can be rewritten as
 
-plot(x, y, pch = 19, ylim = c(0, 100))
+$$
+J(w,b)=-\frac{1}{m}\Sigma_1^m[y^ilog(f_{w, b}(x^i))+(1-y^i)log(1-f_{w, b}(x^i))]
+$$
 
-w = runif(100, -5, 5)
-b = 5
-# b = runif(100, -50, 50)
+* Rationale behind this cost function is maximum likelihood
 
-cost = Map(
-  mse
-  , x = list(x)
-  , y = list(y)
-  , w = w
-  , b = b
-) |> 
-  unlist()
 
-cost = cost[order(w)]
-w = w[order(w)]
+### Gradient descent for logistic regression
 
-plot(w, cost, type = "l")
-```
+* Derivatives
+
+  * for parameter $w$: $w=w-\alpha\frac{\partial}{\partial w}J(w, b)$ 
+  * for parameter $b$: $B=b-\alpha\frac{\partial}{\partial b}J(w, b)$
+  
+* simultaneous updates of $w$ and $b$
+* note that $f_{w, b}$ is the sigomoid function in logistic regression
+
+
+## Overfitting and underfitting
+
+* poor fit to training data: underfitting, means high bias, low variance
+* high fit to training data: overfitting, means low bias, high variance
+* well fit to training data: good generalization, balance between bias and variance
+
+
+## Handling overfitting
+
+* causes for overfitting: low number of samples, high number of features, 
+complex model
+
+Adressing overfitting:
+
+* collect more training examples (difficult)
+* select subset of features (risk of information loss)
+* regularization: shrink parameter values w/o setting it to exactly to 0
+* practice hint: regularize $w$, but not $b$ (should not have impact)
+
+
+## Regularization
+
+Cost function:
+
+* known cost function 
+$J(w,b)=\frac{1}{2m}\Sigma^m_{1}(f_{w,b}(x^i)-y^i))^2$
+* regularized cost function 
+$J(w,b)=\frac{1}{2m}\Sigma^m_{i=1}(f_{w,b}(x^i)-y^i))^2+\frac{\lambda}{2m}\Sigma_{j=1}^nw^2_j$
+* second term is the regularization term 
+* $\lambda$ is the regularization parameter
+
+Linear regression:
+
+Cost function:
+
+$$
+J(w,b)=\frac{1}{2m}\Sigma_{i=1}^m(f_{w, b}(x^i)-y^i)+\frac{\lambda}{2m}\Sigma_{j=1}^nw_j
+$$
+
+* Derivatives
+
+  * for parameter $w$: $w=w-\alpha\frac{\partial}{\partial w}J(w, b)=\frac{1}{m}\Sigma^m_{i=1}(f_{w,b}(x^i)-y^i)x^i+\frac{\lambda}{m}w_j$ 
+  * for parameter $b$: $B=b-\alpha\frac{\partial}{\partial b}J(w, b)$
+  * $b$ remains the same as we do not regularize it
+
+
+Logistic regression:
+
+Cost function:
+
+$$
+J(w,b)=-\frac{1}{m}\Sigma_{i=1}^m[y^ilog(f_{w, b}(x^i))+(1-y^i)log(1-f_{w, b}(x^i))]+\frac{\lambda}{2m}\Sigma_{j=1}^nw_j
+$$
+
+* Derivatives
+
+  * for parameter $w$: $w=w-\alpha\frac{\partial}{\partial w}J(w, b)=\frac{1}{m}\Sigma^m_{i=1}(f_{w,b}(x^i)-y^i)x^i+\frac{\lambda}{m}w_j$ 
+  * for parameter $b$: $B=b-\alpha\frac{\partial}{\partial b}J(w, b)$
+  * $b$ remains the same as we do not regularize it
+

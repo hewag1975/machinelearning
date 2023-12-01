@@ -1,0 +1,45 @@
+---
+title: "Notes advanced learning algorithms"
+format: html
+editor: source
+editor_options: 
+  chunk_output_type: console
+engine: knitr
+---
+
+```{r}
+knitr::opts_knit$set(
+  root.dir = '~/Documents/repos/github/machinelearning'
+)
+```
+
+
+## Neural networks
+
+* neural networks = deep learning algorithms
+* inference: take a pre-trained NN and make predictions
+* traditional algorithms (linear, logistic regression) do not scale with amount of data
+* activation function takes input and creates output, e.g. by logistic regression
+* layer: group of n neurons (1..n), connected to the same input features
+* output layer: final layer delivering the output
+* input layer: first layer with features
+* hidden layer: combines inputs from earlier layers to new features
+* input $x$, activation $a$
+* activations: logistic regressions that generate new features
+* activations: higher level features
+* architecture: number of hidden layers and hidden units per layer
+* "multilayer perceptron": NN with multiple hidden layers
+
+
+### Notation
+
+* $a^l=g(w^l_j*a^{l-1}+b^l_j)$
+* $a$ is the activation
+* $l$ is the layer
+* $j$ is the unit / neuron
+
+* inference = making predictions, forward propagation
+
+
+
+
