@@ -41,5 +41,17 @@ knitr::opts_knit$set(
 * inference = making predictions, forward propagation
 
 
+```{python}
+import numpy as np
+
+X_train = np.array([[1.0], [2.0]], dtype=np.float32)
+X_train.shape
+X_train[0]
+
+x = X_train[0].reshape(1,1)
+
+print(x)
+
+```
 
 
