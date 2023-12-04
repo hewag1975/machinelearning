@@ -8,6 +8,9 @@ engine: knitr
 ---
 
 ```{r}
+#| label: setup
+#| include: false
+
 knitr::opts_knit$set(
   root.dir = '~/Documents/repos/github/machinelearning'
 )
@@ -23,9 +26,11 @@ knitr::opts_knit$set(
 * loss is calculated per observation, sum of all losses gives the cost $J$
 * change parameters to reduce cost $J$ to possible (local) minimum
 * example of gradient descent for cost function $J(w, b)$:
-* for parameter $w$: $w=w-\alpha\frac{\partial}{\partial w}J(w, b)$ 
-* for parameter $b$: $B=b-\alpha\frac{\partial}{\partial b}J(w, b)$
-* with $\alpha$: learning rate, e.g. 0.01, corresponds to the step size
+
+  * for parameter $w$: $w=w-\alpha\frac{\partial}{\partial w}J(w, b)$ 
+  * for parameter $b$: $b=b-\alpha\frac{\partial}{\partial b}J(w, b)$
+  
+* $\alpha$ is termed learning rate, e.g. 0.01, corresponds to the step size
 * derivative indicates direction and grade of descent per parameter
 * in case of one parameter, partial derivative is tangent line
 * in case of two parameters, partial derivatives form a 2D-plane 
@@ -33,11 +38,12 @@ knitr::opts_knit$set(
 * near local minimum update steps get smaller by design, even with constant 
 learning rate $\alpha$
 * repeat until convergence, i.e. changes get smaller per step
-* small leaning rate leads to slow descent (many steps)
-* large leaning rate may miss the minimum and fail to converge
+* small learning rate leads to slow descent (many steps)
+* large learning rate may miss the minimum and fail to converge
 * stopping criteria:
-* derivative of cost function is close to zero
-* small changes of parameters 
+
+  * derivative of cost function is close to zero
+  * small changes of parameters 
 
 Example with linear regression:
 
@@ -132,7 +138,10 @@ L(f_{w, b}(x^i), y^i)=
 -log(1-f_{w, b}(x^i)), \text{ if } y^i = 0 
 \end{cases}
 $$
-* reminder: loss is per observation, sum of loss is cost $J$
+
+Reminder: 
+
+* loss $L$ is per observation, sum of loss is cost $J$  
 * cost $J$ for a certain set of parameters is 
 $J(w,b)=\frac{1}{m}\Sigma_1^m L(f_{w, b}(x^i), y^i)$
 
@@ -175,34 +184,28 @@ plt.show()
 
 ### Loss and cost function simplified
 
-* Given that outputs can only be 0 or 1, the loss function $L$ per observation 
-can be rewritten as
-
-$$
-L(f_{w, b}(x^i), y^i)=-y^ilog(f_{w, b}(x^i))-(1-y^i)log(1-f_{w, b}(x^i))
-$$
+Given that outputs can only be 0 or 1, the loss function $L$ per observation 
+can be rewritten as: 
+$L(f_{w, b}(x^i), y^i)=-y^ilog(f_{w, b}(x^i))-(1-y^i)log(1-f_{w, b}(x^i))$
 
 * if $y^i=1$ this simplifies to $L(f_{w, b}(x^i), y^i)=-log(f_{w, b}(x^i))$
 * if $y^i=0$ this simplifies to $L(f_{w, b}(x^i), y^i)=-log(1-f_{w, b}(x^i))$
 
-* Cost can be rewritten as
-
-$$
-J(w,b)=-\frac{1}{m}\Sigma_1^m[y^ilog(f_{w, b}(x^i))+(1-y^i)log(1-f_{w, b}(x^i))]
-$$
+Thereby, the cost $J$ can be rewritten as:
+$J(w,b)=-\frac{1}{m}\Sigma_1^m[y^ilog(f_{w, b}(x^i))+(1-y^i)log(1-f_{w, b}(x^i))]$
 
 * Rationale behind this cost function is maximum likelihood
 
 
 ### Gradient descent for logistic regression
 
-* Derivatives
+* calculate derivatives
 
   * for parameter $w$: $w=w-\alpha\frac{\partial}{\partial w}J(w, b)$ 
   * for parameter $b$: $B=b-\alpha\frac{\partial}{\partial b}J(w, b)$
   
-* simultaneous updates of $w$ and $b$
-* note that $f_{w, b}$ is the sigomoid function in logistic regression
+* simultaneously update $w$ and $b$
+* note that $f_{w, b}$ is the sigmoid function in logistic regression
 
 
 ## Overfitting and underfitting
@@ -236,30 +239,20 @@ $J(w,b)=\frac{1}{2m}\Sigma^m_{i=1}(f_{w,b}(x^i)-y^i))^2+\frac{\lambda}{2m}\Sigma
 * second term is the regularization term 
 * $\lambda$ is the regularization parameter
 
-Linear regression:
+Example linear regression:
 
-Cost function:
-
-$$
-J(w,b)=\frac{1}{2m}\Sigma_{i=1}^m(f_{w, b}(x^i)-y^i)+\frac{\lambda}{2m}\Sigma_{j=1}^nw_j
-$$
-
-* Derivatives
+* cost function: $J(w,b)=\frac{1}{2m}\Sigma_{i=1}^m(f_{w, b}(x^i)-y^i)+\frac{\lambda}{2m}\Sigma_{j=1}^nw_j$  
+* derivatives
 
   * for parameter $w$: $w=w-\alpha\frac{\partial}{\partial w}J(w, b)=\frac{1}{m}\Sigma^m_{i=1}(f_{w,b}(x^i)-y^i)x^i+\frac{\lambda}{m}w_j$ 
   * for parameter $b$: $B=b-\alpha\frac{\partial}{\partial b}J(w, b)$
   * $b$ remains the same as we do not regularize it
 
 
-Logistic regression:
+Example logistic regression:
 
-Cost function:
-
-$$
-J(w,b)=-\frac{1}{m}\Sigma_{i=1}^m[y^ilog(f_{w, b}(x^i))+(1-y^i)log(1-f_{w, b}(x^i))]+\frac{\lambda}{2m}\Sigma_{j=1}^nw_j
-$$
-
-* Derivatives
+* cost function: $J(w,b)=-\frac{1}{m}\Sigma_{i=1}^m[y^ilog(f_{w, b}(x^i))+(1-y^i)log(1-f_{w, b}(x^i))]+\frac{\lambda}{2m}\Sigma_{j=1}^nw_j$ 
+* derivatives
 
   * for parameter $w$: $w=w-\alpha\frac{\partial}{\partial w}J(w, b)=\frac{1}{m}\Sigma^m_{i=1}(f_{w,b}(x^i)-y^i)x^i+\frac{\lambda}{m}w_j$ 
   * for parameter $b$: $B=b-\alpha\frac{\partial}{\partial b}J(w, b)$
