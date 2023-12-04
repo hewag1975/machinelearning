@@ -8,17 +8,19 @@ engine: knitr
 ---
 
 ```{r}
+#| label: setup
+#| include: false
+
 knitr::opts_knit$set(
   root.dir = '~/Documents/repos/github/machinelearning'
 )
 ```
 
 
-
-
 ## Snippets
 
 ```{python}
+
 import numpy as np
 
 x = np.random.normal(size=100, loc=1, scale=2)
@@ -33,17 +35,15 @@ w2 = np.array([0.2, -0.5])
 w1+w2
 dj_dw = np.zeros(w.shape)
 dj_dw.shape
-
-
-
 ```
 
 ```{r}
+
 mse = function(x, y, w, b){
-p = x * w + b
-se = sum((p - y)^2)
-mse = se / 2 / length(p)
-return(mse)
+  p = x * w + b
+  se = sum((p - y)^2)
+  mse = se / 2 / length(p)
+  return(mse)
 }
 
 x = 1:100
@@ -57,13 +57,13 @@ b = 5
 # b = runif(100, -50, 50)
 
 cost = Map(
-mse
-, x = list(x)
-, y = list(y)
-, w = w
-, b = b
+  mse
+  , x = list(x)
+  , y = list(y)
+  , w = w
+  , b = b
 ) |> 
-unlist()
+  unlist()
 
 cost = cost[order(w)]
 w = w[order(w)]

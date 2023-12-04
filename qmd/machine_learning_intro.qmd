@@ -14,7 +14,7 @@ explicitly programmed. - *Arthur Samuel (1959)*
 ### Supervised learning
 
 * regression (model, cost function)
-* gradient descent
+* parameter estimation through gradient descent
 
 
 ### Unsupervised learning
