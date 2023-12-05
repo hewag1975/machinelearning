@@ -38,7 +38,17 @@ knitr::opts_knit$set(
 * $l$ is the layer
 * $j$ is the unit / neuron
 
-* inference = making predictions, forward propagation
+* inference = making predictions, aka forward propagation
+
+
+### Efficient implementation
+
+* dot product
+* matrix notatoin, transpose
+* matrix multiplication
+* in Python `np.matmul` or `@`
+
+
 
 
 ```{python}
