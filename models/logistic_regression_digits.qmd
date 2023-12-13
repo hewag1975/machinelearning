@@ -1,0 +1,69 @@
+---
+title: "Handwritten digits recognition"
+subtitle: "Logistic regression example"
+format: 
+  html:
+    code-fold: true
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{python}
+#| label: setup
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_digits 
+from sklearn.model_selection import train_test_split 
+
+digits = load_digits()
+# digits.keys()
+print(digits.DESCR)
+```
+
+
+```{python}
+#| label: data
+X = digits.data
+y = digits.target
+
+X.shape
+
+digits.images[0]
+X[0]
+```
+
+
+```{python}
+#| label: plt-digits
+
+def plt_digits(i):
+    '''Plots 16 digits, starting with digit i'''
+    nplots = 25
+    fig = plt.figure(figsize = (5, 5))
+    for j in range(nplots):
+        plt.subplot(5, 5, j + 1)
+        plt.imshow(digits.images[i + j], cmap = 'binary', interpolation = 'nearest')
+        plt.title(digits.target[i + j])
+        plt.axis('off')
+    plt.show()
+
+plt_digits(0)    
+```
+
+```{python}
+#| label: train-test-split
+
+X_train, X_test, y_train, y_test = train_test_split(
+  X
+  , y
+  , test_size = 0.3
+  , random_state = 123
+  , stratify = y
+  )
+
+print("Dimensions of training data: ", X_train.shape)
+print("Dimensions of test data: ", X_test.shape)
+```
+
