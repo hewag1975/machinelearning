@@ -169,10 +169,10 @@ probabilities afterwards using the sigmoid function ($g(z)$)
   * many choices regarding architecture (size of subsets)
 
 
-
 ### Back propagation 
 
-* 
+* back propagation is an algorithm used to efficiently calculate derivatives
+* computation graphs are used to simplify the operation 
 
 
 
