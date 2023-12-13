@@ -19,38 +19,38 @@ knitr::opts_knit$set(
 
 ## Linear regression
 
-### Gradient descent
+### Gradient descent  
 
-* random starting parameters
-* select loss function (e.g. MSE, RMSE, ...)
-* loss is calculated per observation, sum of all losses gives the cost $J$
-* change parameters to reduce cost $J$ to possible (local) minimum
-* example of gradient descent for cost function $J(w, b)$:
+* random starting parameters  
+* select loss function (e.g. MSE, RMSE, ...)  
+* loss is calculated per observation, sum of all losses gives the cost $J$  
+* change parameters to reduce cost $J$ to possible (local) minimum  
+* example of gradient descent for cost function $J(w, b)$:  
 
   * for parameter $w$: $w=w-\alpha\frac{\partial}{\partial w}J(w, b)$ 
   * for parameter $b$: $b=b-\alpha\frac{\partial}{\partial b}J(w, b)$
   
-* $\alpha$ is termed learning rate, e.g. 0.01, corresponds to the step size
-* derivative indicates direction and grade of descent per parameter
-* in case of one parameter, partial derivative is tangent line
-* in case of two parameters, partial derivatives form a 2D-plane 
-* parameters are updated simultaneously
+* $\alpha$ is termed learning rate, e.g. 0.01, corresponds to the step size  
+* derivative indicates direction and grade of descent per parameter  
+* in case of one parameter, partial derivative is tangent line  
+* in case of two parameters, partial derivatives form a 2D-plane  
+* parameters are updated simultaneously  
 * near local minimum update steps get smaller by design, even with constant 
-learning rate $\alpha$
-* repeat until convergence, i.e. changes get smaller per step
-* small learning rate leads to slow descent (many steps)
-* large learning rate may miss the minimum and fail to converge
-* stopping criteria:
+learning rate $\alpha$  
+* repeat until convergence, i.e. changes get smaller per step  
+* small learning rate leads to slow descent (many steps)  
+* large learning rate may miss the minimum and fail to converge  
+* stopping criteria:  
 
   * derivative of cost function is close to zero
   * small changes of parameters 
 
-Example with linear regression:
+Example with linear regression:  
 
-* partial derivatives
-* always one global minimum
+* partial derivatives  
+* always one global minimum  
 * in linear regression **batch** gradient descent is used which uses the entire 
-training data at each step
+training data at each step  
 
 In linear regression parameters $w$ can be estimated using the normal equation 
 without iterations. This is usually impossible in other models. 
@@ -69,7 +69,7 @@ Methods of scaling:
 * normalize to mean and sd: (x - mean(x)) / sd(x)
 
 
-### Convergence of gradient descent
+### Convergence 
 
 * plot cost function $J$ against number of iterations
 * ideally $J$ should decrease on every iteration and at some stage flatten out 
