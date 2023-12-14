@@ -175,5 +175,20 @@ probabilities afterwards using the sigmoid function ($g(z)$)
 * computation graphs are used to simplify the operation 
 
 
+## Model evaluation
+
+* evaluate model performance by train-test-split
+* compare train error $J$ with test error
+* calculate cost $J_{train}$ for train and $J_{test}$ for test set (regression, 
+classification)
+* calculate fraction of misclassified observations in train and test 
+(classification)
+* cross-validation approach: split data into training, cross-validation (aka 
+validation set or development set or dev set) and test set
+* cross-validation approach is recommended if additional parameters are 
+optimized (e.g. degree of a polynomial, number of layers in a NN, ...)
+* error is same as cost except the regularization term
+* test set is only used for estimating the generalization error
+
 
 
