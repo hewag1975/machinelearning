@@ -25,13 +25,13 @@ print(digits.DESCR)
 
 ```{python}
 #| label: data
+
 X = digits.data
 y = digits.target
 
-X.shape
-
-digits.images[0]
-X[0]
+print("The shpae of X is: ", X.shape)
+print("The first element of X is: ", X[0])
+print("The first element of y is: ", y[0])
 ```
 
 
@@ -53,6 +53,35 @@ plt_digits(0)
 ```
 
 ```{python}
+#| eval: false
+
+m, n = X.shape
+
+fig, axes = plt.subplots(8,8, figsize=(5,5))
+fig.tight_layout(pad=0.13,rect=[0, 0.03, 1, 0.91]) #[left, bottom, right, top]
+
+#fig.tight_layout(pad=0.5)
+widgvis(fig)
+for i,ax in enumerate(axes.flat):
+    # Select random indices
+    random_index = np.random.randint(m)
+    
+    # Select rows corresponding to the random indices and
+    # reshape the image
+    X_random_reshaped = X[random_index].reshape((20,20)).T
+    
+    # Display the image
+    ax.imshow(X_random_reshaped, cmap='gray')
+    
+    # Display the label above the image
+    ax.set_title(y[random_index,0])
+    ax.set_axis_off()
+    fig.suptitle("Label, image", fontsize=14)
+```
+
+
+
+```{python}
 #| label: train-test-split
 
 X_train, X_test, y_train, y_test = train_test_split(
@@ -66,4 +95,30 @@ X_train, X_test, y_train, y_test = train_test_split(
 print("Dimensions of training data: ", X_train.shape)
 print("Dimensions of test data: ", X_test.shape)
 ```
+
+
+
+```{python}
+#| eval: false
+
+z = np.array([1., 2., 3., 4.])
+z.shape
+sum(np.exp(z) / sum(np.exp(z)))
+
+def my_softmax(z):  
+    """ Softmax converts a vector of values to a probability distribution.
+    Args:
+      z (ndarray (N,))  : input data, N features
+    Returns:
+      a (ndarray (N,))  : softmax of z
+    """    
+    ### START CODE HERE ### 
+    a = np.exp(z) / sum(np.exp(z))
+    ### END CODE HERE ### 
+    return a
+  
+my_softmax(z)
+
+```
+
 
