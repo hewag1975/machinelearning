@@ -1,0 +1,841 @@
+---
+title: "Insurance premium modeling"
+subtitle: "Random forest example in R"
+author: Hendrik Wagenseil
+date: 2023-05-23
+format: 
+  html:
+    code-fold: true
+    code-copy: true
+    toc: true
+    tbl-cap-location: margin
+    fig-cap-location: margin
+    fig-align: center
+    fig-height: 6
+    fig-width: 10
+editor: source
+editor_options: 
+  chunk_output_type: console
+---
+
+<!-- https://understandingdata.com/posts/11-feature-engineering-tactics-for-an-ml-project/ -->
+<!-- include corplot https://cran.r-project.org/web/packages/corrplot/vignettes/corrplot-intro.html -->
+<!-- library("mlr3viz") -->
+<!-- autoplot(task_mtcars, type = "pairs") -->
+
+```{r}
+#| label: setup
+
+options(scipen = 999)
+
+## packages
+library(data.table)
+library(farff)
+library(ranger)
+library(ggplot2)
+library(kableExtra)
+
+## functions
+rmseTable = function(l){
+  l |> 
+    lapply(FUN = as.data.table) |> 
+    rbindlist(idcol = "Model") |> 
+    setNames(nm = c("Model", "RMSE")) |> 
+    kbl() |> 
+    kable_classic() |> 
+    kable_styling(
+      full_width = FALSE
+      , font_size = 14L
+      , bootstrap_options = "striped"
+    ) 
+}
+
+## variables
+var_fct = c("Area", "VehPower", "VehBrand", "VehGas", "Region")
+var_num = c("Exposure", "VehAge", "DrivAge", "BonusMalus", "Density")
+```
+
+
+## Objective
+
+The objective of this exercise is to develop a model that predicts claims per year 
+per insurance contract as a basis for fair insurance premium calculation. 
+
+
+## Considerations
+
+* Insurance risk is a combination of **claim amount** and **event risk**. Both 
+factors are required to calculate insurance premium. 
+* The main objective of this exercise is to find features that well explain 
+and can predict **claim amounts** per year. 
+* Here, only the actual claims are used for model building, i.e. for finding 
+relationships between claim amount and features. These relationships can then 
+be used to predict a potential claim amount **in case of a claim** for all 
+customers w/o actual damage.
+
+
+## Data preparation
+
+This involves the following steps:
+
+* Import contract data from `freMTPL2freq.arff`.
+* Import claims data from `freMTPL2sev.arff`.
+* Aggregate claims per contract (in case of multiple claims).
+* Create analysis data set by merging.
+* Define dependent variable (claim amount per year).
+* Initial data inspection for missing values (see @fig-complete), distributions, etc. 
+(see @fig-summary) using a random sample of 25,000 observations.
+
+```{r}
+#| label: imp-prep
+#| message: false
+
+ctr_imp = readARFF("data/freMTPL2freq.arff") |> 
+  as.data.table()
+clm_imp = readARFF("data/freMTPL2sev.arff") |> 
+  as.data.table()
+
+## de-duplicate
+# any(gdata::duplicated2(ctr_imp$IDpol))
+# any(gdata::duplicated2(clm_imp$IDpol))
+clm_imp = clm_imp[
+  , list(ClaimAmount = sum(ClaimAmount))
+  , by = IDpol
+]
+
+ctr_imp = merge(
+  ctr_imp
+  , y = clm_imp
+  , by = "IDpol"
+  , all.x = TRUE
+)
+
+ctr_imp[, ClaimYear := ClaimAmount / Exposure]
+
+## for correct ordering in plots
+ctr_imp[, VehPower := formatC(VehPower, width = 2L, flag = "0")]
+ctr_imp[, VehBrand := as.numeric(substr(VehBrand, start = 2L, stop = 3L))]
+ctr_imp[, VehBrand := formatC(VehBrand, width = 2L, flag = "0")]
+ctr_imp[, VehBrand := paste0("B", VehBrand)]
+
+ctr_imp[
+  , VehPower := factor(
+    VehPower
+    , levels = sort(unique(VehPower))
+  )
+]
+
+ctr_imp[
+  , VehBrand := factor(
+    VehBrand
+    , levels = paste0(
+      "B"
+      , formatC(1:15, width = 2L, flag = "0")
+    )
+  )
+]
+
+ctr_imp[, VehGas := factor(VehGas)]
+```
+
+```{r}
+#| label: fig-complete
+#| fig-cap: Inspection for missings
+
+set.seed(234L)
+idx = sample(seq_len(nrow(ctr_imp)), size = 25000L)
+visdat::vis_dat(ctr_imp[idx])
+```
+
+
+```{r}
+#| label: fig-summary
+#| fig-cap: Data summary
+
+skimr::skim(ctr_imp[idx])
+ctr = ctr_imp[!is.na(ClaimYear)]
+```
+
+Findings:
+
+* Missing data occurs only in `ClaimAmount` and `ClaimYear` as for the 
+vast majority of contracts no damage was claimed 
+(`r round(100 * nrow(ctr_imp[is.na(ClaimYear)]) / nrow(ctr_imp), digits = 1)`%). 
+* `Exposure` suggests that the data set only contains new contracts (?). 
+* There are a number of extra ordinary high claims 
+(maximum of `r max(ctr_imp$ClaimYear, na.rm = TRUE)`). 
+
+
+## Data exploration
+
+@fig-explore-dep shows the original and log10-transformed dependent variable for 
+all claims. Obviously a high number of damages is around 1,000 to 1,200 EUR. 
+To avoid outliers from affecting model performance, the top 
+(>`r round(quantile(ctr$ClaimYear, probs = 0.99), digits = 2L)` EUR) 
+and bottom 1% 
+(<`r round(quantile(ctr$ClaimYear, probs = 0.01), digits = 2L)` EUR) 
+of claims have been excluded.
+
+```{r}
+#| label: fig-explore-dep
+#| fig-cap: Distribution of claims per year
+cutoff = quantile(ctr$ClaimYear, probs = c(0.01, 0.99))
+ctr = ctr[ClaimYear > cutoff[1] & ClaimYear < cutoff[2]]
+ctr[, ClaimYearLog := log10(ClaimYear + 1)]
+
+plt = melt(
+  ctr
+  , id.vars = "IDpol"
+  , measure.vars = c("ClaimYear", "ClaimYearLog")
+  , variable.name = "var"
+  , value.name = "val"
+)
+
+ggplot(
+  plt
+  , mapping = aes(val)
+) + 
+  geom_histogram(bins = 100L) + 
+  scale_x_continuous("Claimed amount per year [original and log10]") + 
+  scale_y_continuous("") + 
+  facet_wrap(vars(var), scales = "free", ncol = 2L) + 
+  theme_bw()
+```
+
+
+## Train-test-validation split
+
+The entire data set is split into 3 parts following the train-test-validation 
+set approach:
+
+* 70% of the data are used for model training
+* 20% of the data are used for validation, i.e. feature evaluation, model comparison, etc.
+* 10% of the data are used for testing, i.e. final (one-time) model performance evaluation
+
+```{r}
+#| label: train-test-val
+
+set.seed(123L)
+idx = sample(
+  1:3
+  , size = nrow(ctr)
+  , prob = c(0.7, 0.2, 0.1)
+  , replace = TRUE
+)
+
+ttv = lapply(
+  1:3
+  , FUN = \(i) {
+    ctr[
+      idx == i
+      , .SD
+      , .SDcols = c(var_fct, var_num, "ClaimYearLog")
+    ]
+  }
+)
+
+names(ttv) = c("train", "validate", "test")
+```
+
+
+## Baseline models
+
+Given the numeric response, evaluation of model performance will be based on 
+RMSE as this metric is in the same unit scale as the target variable. 
+
+The simplest of all models can be taken as a baseline to assess the impact of 
+feature engineering and also to see if ML models can improve the prediction. 
+Here we are taking the average claim per year as the baseline model. 
+
+```{r}
+#| label: baseline
+ttv$validate[, pMean := mean(ttv$train$ClaimYearLog)]
+
+pfm = list(
+  "Baseline Mean" = Metrics::rmse(
+    10 ^ ttv$validate$ClaimYearLog - 1
+    , predicted = 10 ^ ttv$validate$pMean - 1
+  )
+) 
+```
+
+In order to also investigate the impact of feature engineering, two models - 
+a GLM and a random forest (with default settings) - are trained on the 
+predictors as they are. 
+
+```{r}
+#| label: baseline-mod
+#| eval: false
+
+glm_base = glm(
+  ClaimYearLog ~ .
+  , family = "gaussian"
+  , data = ttv$train
+)
+
+rf_base = ranger::ranger(
+  ClaimYearLog ~ .
+  , data = ttv$train
+  , num.trees = 250L
+  , mtry = 3L
+  , importance = "impurity"
+  , seed = 432L
+)
+
+mod_base = list(
+  glm_base = glm_base
+  , rf_base = rf_base
+)
+
+readr::write_rds(
+  mod_base
+  , file = "data/mod_base.rds"
+  , compress = "gz"
+)
+```
+
+```{r}
+#| label: tbl-baseline
+#| tbl-cap: Baseline RMSE (GLM and RF as is)
+mod_base = readr::read_rds("data/mod_base.rds")
+
+ttv$validate$pGLM = predict(
+  mod_base$glm_base
+  , newdata = ttv$validate
+)
+
+ttv$validate$pRF = predict(
+  mod_base$rf_base
+  , data = ttv$validate
+)$predictions
+
+pfm = c(
+  pfm[1]
+  , list(
+    "GLM as is" = Metrics::rmse(
+      10 ^ ttv$validate$ClaimYearLog - 1
+      , predicted = 10 ^ ttv$validate$pGLM - 1
+    )
+    , "RF as is" = Metrics::rmse(
+      10 ^ ttv$validate$ClaimYearLog - 1
+      , predicted = 10 ^ ttv$validate$pRF - 1
+    )
+  )
+)
+
+rmseTable(pfm)
+```
+
+
+## Data exploration and feature engineering
+
+For further data exploration and feature engineering, the response variable is 
+plotted versus all predictors using 
+
+* boxplots for factor variables
+* scatter plots for numeric variables
+
+Also, distributions of numeric predictors are evaluated using density plots. 
+
+```{r}
+#| label: fig-factor
+#| fig-cap: Claims per year for different categorical predictors
+#| fig-height: 12
+plt = lapply(
+  var_fct
+  , FUN = \(i){
+    
+    # i = var_fct[2]
+    
+    t = table(ttv$train[[i]]) 
+    f = as.numeric(t) / nrow(ttv$train) 
+    f = cut(
+      f
+      , breaks = c(0, 0.05, 0.1, 0.25, 0.5, 1)
+      , labels = c("0-5%", "5-10%", "10-25%", "25-50%", "50+%")
+    )
+    names(f) = names(t)
+    
+    ggplot(
+      ttv$train
+      , mapping = aes(
+        forcats::fct_reorder(
+          factor(get(i))
+          , .x = ClaimYearLog
+          , .fun = median
+        )
+        , y = ClaimYearLog
+        , fill = f[get(i)]
+      )
+    ) + 
+      geom_boxplot() + 
+      scale_x_discrete(i) +
+      scale_y_continuous(
+        "Claims per year [log10]"
+      ) + 
+      scale_fill_brewer(
+        type = "qual"
+        , palette = "Set1"
+        , drop = FALSE
+      ) + 
+      theme_bw() + 
+      theme(
+        legend.position = "bottom"
+        , legend.title = element_blank()
+      )
+  }
+)
+
+plt$ncol = 2L
+do.call(gridExtra::grid.arrange, args = plt)
+```
+
+```{r}
+#| label: refactor
+rec = copy(ttv$train)
+
+rec = melt(
+  rec
+  , id.vars = "ClaimYearLog"
+  , measure.vars = var_fct
+)
+
+rec = rec[
+  , list(
+    ClaimYearLog = median(ClaimYearLog)
+    , nCtr = .N
+  )
+  , by = c("variable", "value")
+]
+
+setorder(rec, variable, -ClaimYearLog)
+
+rec[, sCtr := nCtr / sum(nCtr), by = variable]
+rec[, cCtr := cumsum(sCtr), by = "variable"]
+rec[, new := ceiling(cCtr * 5)]
+
+## refactor
+reg = rec[variable == "Region"]$new
+names(reg) = rec[variable == "Region"]$value
+
+# brd = rec[variable == "VehBrand"]$new
+# names(brd) = rec[variable == "VehBrand"]$value
+# 
+# pow = rec[variable == "VehPower"]$new
+# names(pow) = rec[variable == "VehPower"]$value
+
+ttv_fe = lapply(
+  ttv
+  , FUN = \(data){
+    
+    data = copy(data)
+    data[, Region := factor(
+      Region
+      , levels = names(reg)
+      , labels = reg
+    )]
+    
+    # data[, VehBrand := factor(
+    #   VehBrand
+    #   , levels = names(brd)
+    #   , labels = brd
+    # )]
+    # 
+    # data[, VehPower := factor(
+    #   VehPower
+    #   , levels = names(pow)
+    #   , labels = pow
+    # )]
+    
+    return(data)
+    
+  }
+)
+```
+
+The following recoding is manually applied based on category size and average 
+claim amount:
+
+* `Area`: Leave as is
+* `VehGas`: Leave as is
+* `VehPower`: Leave as is
+* `VehBrand`: Leave as is
+* `Veh`: Condense to 4 groups
+
+```{r}
+#| label: fig-univariate-num
+#| fig-cap: Density of numerical predictors
+
+plt = lapply(
+  var_num
+  , FUN = \(i){
+    # i = var_num[2]
+    ggplot(
+      ttv_fe$train
+      , mapping = aes(get(i))
+    ) + 
+      geom_density() + 
+      # geom_boxplot(stat = "identity") + 
+      scale_x_continuous(i) + 
+      scale_y_continuous("") + 
+      theme_bw()
+  }
+)
+
+plt$ncol = 2L
+do.call(gridExtra::grid.arrange, args = plt)
+```
+
+```{r}
+#| label: fig-numeric
+#| fig-cap: Claims per year for different numeric variables
+#| warning: false
+#| message: false
+
+plt = lapply(
+  var_num
+  , FUN = \(i){
+    # i = var_num[1]
+    ggplot(
+      ctr
+      , mapping = aes(
+        get(i)
+        , y = log10(ClaimYear)
+      )
+    ) + 
+      geom_point() + 
+      geom_smooth(method = "lm") +
+      scale_x_continuous(i) +
+      scale_y_continuous("Claims per year [log10]") +
+      theme_bw()
+  }
+)
+
+plt$ncol = 2L
+do.call(gridExtra::grid.arrange, args = plt)
+```
+
+```{r}
+#| label: transform
+ttv_fe = copy(ttv)
+ttv_fe = lapply(
+  ttv_fe
+  , FUN = \(data){
+    data[, Exposure := ifelse(Exposure > 1, yes = 1, no = Exposure)]
+    data[, VehAge := ifelse(VehAge > 25, yes = 25, no = VehAge)]
+    data[, DrivAge := ifelse(DrivAge > 85, yes = 85, no = DrivAge)]
+    data[, BonusMalus := ifelse(BonusMalus > 150, yes = 150, no = BonusMalus)]
+    # data[
+    #   , BonusMalus := cut(
+    #     BonusMalus
+    #     , breaks = c(0, 55, 100, 500)
+    #     , labels = c("low", "medium", "high")
+    #   )
+    # ]
+    data[, Density := log10(Density + 1)]
+    return(data)
+  }
+)
+```
+
+The following treatment is applied to the numeric predictors:
+
+* `Exposure`: Cut at 1
+* `VehAge`: Cut at 25
+* `DrivAge`: Cut at 85
+* `BonusMalus`: Cut at 150
+* `Density`: log10 transformation
+
+```{r}
+#| label: fe-mod
+#| eval: false
+
+glm_fe = glm(
+  ClaimYearLog ~ .
+  , family = "gaussian"
+  , data = ttv_fe$train
+)
+
+rf_fe = ranger::ranger(
+  ClaimYearLog ~ .
+  , data = ttv_fe$train
+  , num.trees = 250L
+  , mtry = 3L
+  , importance = "impurity"
+  , seed = 432L
+)
+
+mod_fe = list(
+  glm_fe = glm_fe
+  , rf_fe = rf_fe
+)
+
+readr::write_rds(
+  mod_fe
+  , file = "data/mod_fe.rds"
+  , compress = "gz"
+)
+```
+
+```{r}
+#| label: tbl-fe
+#| tbl-cap: RMSE features optimized
+mod_fe = readr::read_rds("data/mod_fe.rds")
+
+ttv_fe$validate$pGLMfe = predict(
+  mod_fe$glm_fe
+  , newdata = ttv_fe$validate
+)
+
+ttv_fe$validate$pRFfe = predict(
+  mod_fe$rf_fe
+  , data = ttv_fe$validate
+)$predictions
+
+pfm = c(
+  pfm[1:3]
+  , list(
+    "GLM feat" = Metrics::rmse(
+      10 ^ ttv_fe$validate$ClaimYearLog - 1
+      , predicted = 10 ^ ttv_fe$validate$pGLMfe - 1
+    )
+    , "RF feat" = Metrics::rmse(
+      10 ^ ttv_fe$validate$ClaimYearLog - 1
+      , predicted = 10 ^ ttv_fe$validate$pRFfe - 1
+    )
+  )
+)
+
+rmseTable(pfm)
+```
+
+
+## Hyperparameter tuning
+
+Here, we have optimized the hyperparameters number of trees (`num.tree`) and 
+the subset of predictors randomly selected on each split (`mtry`). Of course 
+there are more parameters that can be optimized. 
+
+```{r}
+#| label: tuning
+#| eval: false
+library(mlr3)
+library(mlr3tuning)
+library(mlr3learners)
+
+## define task
+tsk = as_task_regr(
+  ttv_fe$train
+  , target = "ClaimYearLog"
+  , id = "rf"
+)
+
+## define a learner
+learner = lrn(
+  "regr.ranger"
+  , num.trees = to_tune(200L, 600L)
+  , mtry = to_tune(2L, 6L)
+) 
+
+# as.data.table(
+#   learner$param_set
+# )[, .(id, class, lower, upper, nlevels)]
+
+instance = tune(
+  tuner = tnr("grid_search", resolution = 100, batch_size = 5)
+  , task = tsk
+  , learner = learner
+  , resampling = rsmp("cv", folds = 3)
+  , measures = msr("regr.rmse")
+)
+
+readr::write_rds(
+  instance
+  , file = "data/tuning.rds"
+  , compress = "gz"
+)
+```
+
+```{r}
+#| label: tuning-res
+#| include: false
+instance = readr::read_rds("data/tuning.rds")
+```
+
+Given the cross-validation, we end up with an optimum of 
+`r instance$result$num.trees` trees and `r instance$result$mtry` variables 
+to be selected on each split. We can now apply this to the combined train and 
+validation set and evaluate performance on the test set.
+
+```{r}
+#| label: final
+#| eval: false
+rf_final = ranger::ranger(
+  ClaimYearLog ~ .
+  , data = ttv_fe$train
+  , num.trees = instance$result$num.trees
+  , mtry = instance$result$mtry
+  , importance = "impurity"
+  , seed = 432L
+)
+
+readr::write_rds(
+  rf_final
+  , file = "data/mod_tuned.rds"
+  , compress = "gz"
+)
+```
+
+```{r}
+#| label: tbl-tuned
+#| tbl-cap: Final RMSE
+
+rf_final = readr::read_rds("data/mod_tuned.rds")
+
+ttv_fe$validate$pRF_tune = predict(
+  rf_final
+  , data = ttv_fe$validate
+)$predictions
+
+pfm = c(
+  pfm[1:5]
+  , list(
+    "RF tuned" = Metrics::rmse(
+      10 ^ ttv_fe$validate$ClaimYearLog - 1
+      , predicted = 10 ^ ttv_fe$validate$pRF_tune - 1
+    )
+  )
+)
+
+rmseTable(pfm)
+```
+
+
+## Predictions
+
+Comparison observed versus predicted.
+
+```{r}
+#| label: fig-hist
+#| fig-cap: Distribution of predicted and observed claims
+plt = melt(
+  ttv_fe$validate[, .(ClaimYearLog, pRF_tune)]
+  , measure.vars = c("ClaimYearLog", "pRF_tune") 
+  , variable.name = "var"
+  , value.name = "val"
+)
+
+ggplot(
+  plt
+  , mapping = aes(val)
+) + 
+  geom_histogram(bins = 100L) + 
+  scale_x_continuous("Claimed amount per year [log10]") + 
+  scale_y_continuous("") + 
+  facet_wrap(vars(var), ncol = 2L) + 
+  theme_bw()
+```
+
+```{r}
+#| label: fig-obs-pred
+#| warning: false
+#| fig-cap: Relationship between predicted and observed claims
+p1 = ggplot(
+  ttv_fe$validate
+  , mapping = aes(pRF_tune, y = ClaimYearLog)
+) + 
+  geom_point() + 
+  geom_smooth(method = "lm") + 
+  scale_x_continuous("predicted [log10]") + 
+  scale_y_continuous("observed [log10]") + 
+  theme_bw()
+
+p2 = ggplot(
+  ttv_fe$validate
+  , mapping = aes(10 ^ pRF_tune - 1, y = 10 ^ ClaimYearLog - 1)
+) + 
+  geom_point() + 
+  geom_smooth(method = "lm") + 
+  scale_x_continuous("predicted") + 
+  scale_y_continuous("observed") + 
+  theme_bw()
+
+gridExtra::grid.arrange(p1, p2, ncol = 2L)
+```
+
+```{r}
+#| label: fig-vif
+#| fig-cap: Variable importance (impurity)
+
+vip = data.table(
+  var = names(rf_final$variable.importance)
+  , imp = rf_final$variable.importance
+)
+
+ggplot(
+  vip
+  , mapping = aes(reorder(var, imp), y = imp)
+) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_x_discrete("") + 
+  scale_y_continuous("Variable Importance") + 
+  coord_flip() +
+  theme_bw()
+```
+
+
+## Improvements
+
+* Add more predictors (e.g. car/traffic density)
+* Explore more models using frameworks such as `mlr3`, `H~2~O`, `scikit-learn`
+* Spend more time on data exploration and feature engineering, e.g. 
+reducing dimensions, multicollinearity, ...
+* Split the data into different claim amounts, e.g. low (<1,000 EUR), medium 
+(1,000 to 1,500 EUR) and öarge (>1,500 EUR)
+
+
+```{r}
+#| include: false
+#| eval: false
+prd_fac = melt(
+  ctr[, .SD, .SDcols = c("IDpol", var_fct, "ClaimYear", "Claim")]
+  , id.vars = c("IDpol", "ClaimYear", "Claim")
+  , variable.name = "var"
+  , value.name = "level"
+)
+
+prd_fac = prd_fac[
+  , list(
+    CtrN = .N
+    , ClaimN = sum(Claim)
+    , ClaimYear = sum(ClaimYear)
+  )
+  , by = c("var", "level")
+]
+
+prd_fac[
+  , `:=`(
+    CtrS = CtrN / sum(CtrN)
+    , ClaimS = ClaimN / sum(ClaimN)
+    , ClaimYearS = ClaimYear / sum(ClaimYear)
+  )
+  , by = c("var")
+]
+
+prd_fac[, dev := 100 * (ClaimS / CtrS - 1)]
+
+ggplot(
+  prd_fac
+  , mapping = aes(dev, y = level)
+) + 
+  geom_bar(stat = "identity") + 
+  scale_x_continuous("") + 
+  scale_y_discrete("") + 
+  facet_wrap(
+    vars(var)
+    , ncol = 3L
+    , scales = "free_y"
+  ) + 
+  theme_bw()
+```
+

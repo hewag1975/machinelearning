@@ -1,9 +1,11 @@
 ---
 title: "Handwritten digits recognition"
 subtitle: "Logistic regression example"
+author: Hendrik Wagenseil
 format: 
   html:
     code-fold: true
+editor: source
 editor_options: 
   chunk_output_type: console
 ---
