@@ -191,4 +191,128 @@ optimized (e.g. degree of a polynomial, number of layers in a NN, ...)
 * test set is only used for estimating the generalization error
 
 
+## Bias and variance
+
+* high bias, low variance = underfit
+* high variance, low bias = overfit
+* high $J_{train}$ AND $J_{train} \approx J_{cv}$: high bias 
+* low $J_{train}$ AND $J_{cv} >> J_{train}$: high variance 
+* low $J_{train}$ AND $J_{train} \approx J_{cv}$: 'just right'
+* high $J_{train}$ AND $J_{train} >> J_{cv}$: high bias AND high variance, i.e. 
+model may overfit some parts of the training data and not fit other parts
+
+* evaluating bias and variance in cross-validation is used to tune hyperparameters, 
+e.g. $\lambda$ in regularized models
+* plot cost $J_{train}$ and $J_{cv}$ as a function of $\lambda$
+* baseline level of performance is helpful to evaluate $J_{train}$
+* options for getting a baseline level:
+
+  * human level performance
+  * competing algorithm performance
+  * experienced guess
+
+
+## Learning curves
+
+* plot $J_{train}$ and $J_{cv}$ versus training set size
+* general patterns
+
+  * usually $J_{cv}$ **decreases** with increasing training size
+  * usually $J_{train}$ **increases** with increasing training size 
+  * $J_{cv} > J_{train}$
+  * sample of 1, 2, 3, ... is easier to fit than 1000
+
+* high bias example
+
+  * usually $J_{cv}$ **decreases** with increasing training size
+  * usually $J_{train}$ **increases** with increasing training size 
+  * $J_{cv} > J_{train}$
+  * overall level of $J_{cv}, J_{train}$ is high
+  * difference to baseline (human level) is large
+  * adding more data will not help 
+
+* high variance example
+
+  * usually $J_{cv}$ **decreases** with increasing training size
+  * usually $J_{train}$ **increases** with increasing training size 
+  * $J_{cv} >> J_{train}$
+  * huge gap between $J_{cv}, J_{train}$
+  * baseline (human level) is in between, i.e. $J_{train}$ is better than baseline
+  * adding more data will help 
+  
+  
+## Debugging models
+
+fix high variance problems:
+
+* add more training data
+* reduce features
+* increase $\lambda$
+
+fix high bias problems:
+
+* add features
+* add polynomial features
+* decrease $\lambda$
+
+
+## Bias and variance in NN
+
+* large NN have typically low bias 
+* recipe:
+
+  * evaluate $J_{train}$ 
+
+    * high $J_{train}$: increase NN (more layers, more neurons)
+    * low $J_{train}$: evaluate $J_{cv}$
+  
+      * high $J_{cv}$: add data, start over again
+      * low $J_{cv}$: done
+
+* limitations:
+
+  * large NN architectures require GPUS
+  * more data sometimes expensive
+
+* large NN will usually do better than a smaller one of regularized
+
+
+## ML development process
+
+* iterative loop in ML: choose architecture (model, data, etc.), train model, run 
+diagnostics (bias, variance, error analysis), start over
+* error analysis: inspect misclassifications / large errors (sample) and try to 
+create categories and the prioritize activities to fix large categories
+
+Adding data:
+
+* focus in results of error analysis
+* data augmentation:
+
+  * mirror, enlarge, shrink, warping, ...
+  * frequently applied in images classification, speech recognition
+  * augmentation should be representative for unseen / test data 
+  
+* data synthesis:
+
+  * use case: OCR (object character recognition)
+  * create text in text editor and screenshot
+
+* model-centric approach: AI = **Code** + Data
+* code has been focused on heavily in the past
+* data-centric approach: AI = Code + **Data**
+
+
+## Transfer learning
+
+* take pre-trained NN (images, audio, text)
+* pre-trained NN: NN with supervised pre-training on large datasets
+* fine tune NN on own data
+* option 1: only train parameters of output layer
+* option 2: use trained parameters to initialize a new NN
+* large number of pre-trained models available
+* input needs to be designed same way as for the pre-trained NN
+
+
+
 
