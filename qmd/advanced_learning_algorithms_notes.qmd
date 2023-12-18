@@ -314,5 +314,46 @@ Adding data:
 * input needs to be designed same way as for the pre-trained NN
 
 
+## Cycle of a ML project
+
+* from training to production 
+* deploy plus monitor plus maintain
+* example
+
+  * mobile app calls server via API
+  * server returns predictions
+  
+* software engineering required for reliable predictions, for scaling, logging, 
+system monitoring, model updates
+* practice of deployment and system maintenance: MLOps
+
+
+## Ethics, fairness, bias
+
+* bias: Discrimination against certain people (hiring, loans, negative 
+stereotypes)
+* unethical: deepfakes, adverse use cases, spreading toxic speech, fake use cases
+* guidelines:
+
+  * get a diverse team to brainstorm things that might go wrong (focus on harm)
+  * literature search on guidelines for industry
+  * audit systems against possible harms prior to deployment
+  * develop a mitigation plan (e.g. rollback to earlier system) in case of harms
+
+
+## Skewed datasets
+
+* precision / recall instead of error / accuracy
+* tradeoff between precision and recall
+* precision versus recall plot
+* F1 score: $\frac{1}{\frac{1}{2}(\frac{1}{P}+\frac{1}{R})}=2*\frac{PR}{P+R}$
+* F1 score is harmonic mean of P and R
+
+* ROC and AUC
+
+
+
+
+
 
 
