@@ -332,7 +332,7 @@ system monitoring, model updates
 
 * bias: Discrimination against certain people (hiring, loans, negative 
 stereotypes)
-* unethical: deepfakes, adverse use cases, spreading toxic speech, fake use cases
+* unethical: deep fakes, adverse use cases, spreading toxic speech, fake use cases
 * guidelines:
 
   * get a diverse team to brainstorm things that might go wrong (focus on harm)
@@ -344,16 +344,24 @@ stereotypes)
 ## Skewed datasets
 
 * precision / recall instead of error / accuracy
-* tradeoff between precision and recall
+* trade-off between precision and recall
 * precision versus recall plot
 * F1 score: $\frac{1}{\frac{1}{2}(\frac{1}{P}+\frac{1}{R})}=2*\frac{PR}{P+R}$
 * F1 score is harmonic mean of P and R
 
-* ROC and AUC
 
+## Decision trees
 
+Learning:
 
+* determine feature of root note
+* determine split value 
+* continue per branch with feature selection and split value
 
+Stopping criteria:
 
-
+* purity 
+* maximum depth (0, ..., n)
+* small purity improvements
+* number of units in a node
 
