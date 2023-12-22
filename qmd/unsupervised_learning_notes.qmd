@@ -19,3 +19,23 @@ knitr::opts_knit$set(
 
 ## Unsupervised learning
 
+* clustering 
+* anomaly detection
+
+
+
+
+## Recommender systems
+
+
+
+
+
+
+## Reinforcement learning
+
+
+
+
+
+
