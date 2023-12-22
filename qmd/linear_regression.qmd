@@ -1,0 +1,104 @@
+---
+title: "Linear regression"
+format: html
+editor: source
+editor_options: 
+  chunk_output_type: console
+engine: knitr
+---
+
+
+## Introduction to regression
+
+Using the California housing dataset provided with `scikit-learn`.
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.datasets import fetch_california_housing
+
+housing = fetch_california_housing()
+print(housing.DESCR)
+```
+
+
+```{python}
+
+x = housing.data
+y = housing.target
+
+x_fts = housing.feature_names
+y_nms = housing.target_names
+
+# print(f"x: {x[0:2]}")
+# print(f"y: = {y[0:2]}")
+
+plt.close()
+plt.scatter(x[:, 0], y = y, label = 'observations')
+plt.title('house value versus income')
+plt.xlabel('median income')
+plt.ylabel('median house value [100k USD]')
+plt.show()
+```
+
+
+## Random parameters
+
+```{python}
+
+def predict(x: np.ndarray, w: np.ndarray, b: np.ndarray):
+  return x * w + b
+
+p = predict(
+  x[:, 0]
+  , w = np.array([0.3])
+  , b = np.array([2])    
+)
+
+p
+
+plt.close()
+plt.scatter(x[:, 0], y = y, label = 'observations')
+plt.title('house value versus income')
+plt.xlabel('median income')
+plt.ylabel('median house value [100k USD]')
+plt.plot(x[:,0], p, color = 'r', label = 'predictions')
+plt.legend()
+plt.show()
+```
+
+
+## Cost function
+
+Cost measures how well the model with a certain set of parameters fits the 
+target. The deviation between an individual observation $y$ and the 
+corresponding prediction $y$
+
+```{python}
+
+def cost(x, y, w, b):
+    """
+    Computes the cost function for linear regression.
+    Args:
+      x (ndarray (m,)): data, m examples 
+      y (ndarray (m,)): target values
+      w, b (scalar)   : model parameters  
+    Returns
+        total_cost (float): The cost of using parameters w, b for linear 
+        regression to fit the data points in x and y
+    """
+    
+    m = x.shape[0] 
+    
+    j = 0 
+    for i in range(m): 
+        y_hat = w * x[i] + b   
+        j = j + (y_hat - y[i]) ** 2  
+    j = j / (2 * m)  
+
+    return j
+
+```
+
+
