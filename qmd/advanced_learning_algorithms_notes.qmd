@@ -8,6 +8,9 @@ engine: knitr
 ---
 
 ```{r}
+#| label: setup
+#| include: false
+
 knitr::opts_knit$set(
   root.dir = '~/Documents/repos/github/machinelearning'
 )
@@ -17,7 +20,8 @@ knitr::opts_knit$set(
 ## Neural networks
 
 * neural networks = deep learning algorithms
-* inference: take a pre-trained NN and make predictions
+* inference, forward propagation: take a pre-trained NN and make predictions
+* back-propagation: training a NN 
 * traditional algorithms (linear, logistic regression) do not scale with amount of data
 * activation function takes input and creates output, e.g. by logistic regression
 * layer: group of n neurons (1..n), connected to the same input features
@@ -37,8 +41,6 @@ knitr::opts_knit$set(
 * $a$ is the activation
 * $l$ is the layer
 * $j$ is the unit / neuron
-
-* inference = making predictions, aka forward propagation
 
 
 ### Efficient implementation
@@ -61,7 +63,6 @@ knitr::opts_knit$set(
 * create the model, i.e. define layers (architecture)
 * define cost function, e.g. binary crossentropy
 * train with a max number of epochs, i.e. minimize cost function $J(w,b)$
-* training = back-propagation
 
 
 ### Binary crossentropy loss
@@ -106,14 +107,11 @@ Need of activation functions:
 * MNIST example 
 * softmax regression
 * example of four outputs (1..4):
-
   * calculate $z_1, z_2, z_3, z_4$, e.g. $z_1=w_1*x+b_1$
   * calculate $a_1, a_2, a_3, a_4$, e.g. $a_1=\frac{e^{z_1}}{\Sigma_{i=1}^4 e^{z_i}}$
   * general form: $z_j=w_j*x+b$, followed by $a_j=\frac{e^{z_j}}{\Sigma_{k=1}^j e^{z_k}}$
   * with $a_j=P(y=j|x)$ 
-  
 * loss function (crossentropy loss):
-
 $$
 L(a_1, ..., a_N, y)=
 \begin{cases}
@@ -137,7 +135,6 @@ probabilities afterwards using the sigmoid function ($g(z)$)
 * frequently used in image analysis
 * multiple labels per image (e.g. car, bus, pedestrian, building)
 * possible approaches:
-
   * define multiple networks, one per label
   * define one network with three outputs (output layer with three units) and 
   sigmoid activations
@@ -156,12 +153,9 @@ probabilities afterwards using the sigmoid function ($g(z)$)
 ### Additional layer types
 
 * dense layer     
-  
   * all activations from the previous layer are submitted to every neuron
   * i.e. every neurons output is a function of all activations 
-  
 * convolutional layer 
-
   * only a subset of activations from the previous layer is submitted to each neuron
   * i.e. each neurons output is a function of a subset of activations 
   * faster computation
@@ -200,13 +194,11 @@ optimized (e.g. degree of a polynomial, number of layers in a NN, ...)
 * low $J_{train}$ AND $J_{train} \approx J_{cv}$: 'just right'
 * high $J_{train}$ AND $J_{train} >> J_{cv}$: high bias AND high variance, i.e. 
 model may overfit some parts of the training data and not fit other parts
-
 * evaluating bias and variance in cross-validation is used to tune hyperparameters, 
 e.g. $\lambda$ in regularized models
 * plot cost $J_{train}$ and $J_{cv}$ as a function of $\lambda$
 * baseline level of performance is helpful to evaluate $J_{train}$
 * options for getting a baseline level:
-
   * human level performance
   * competing algorithm performance
   * experienced guess
@@ -216,23 +208,18 @@ e.g. $\lambda$ in regularized models
 
 * plot $J_{train}$ and $J_{cv}$ versus training set size
 * general patterns
-
   * usually $J_{cv}$ **decreases** with increasing training size
   * usually $J_{train}$ **increases** with increasing training size 
   * $J_{cv} > J_{train}$
   * sample of 1, 2, 3, ... is easier to fit than 1000
-
 * high bias example
-
   * usually $J_{cv}$ **decreases** with increasing training size
   * usually $J_{train}$ **increases** with increasing training size 
   * $J_{cv} > J_{train}$
   * overall level of $J_{cv}, J_{train}$ is high
   * difference to baseline (human level) is large
   * adding more data will not help 
-
 * high variance example
-
   * usually $J_{cv}$ **decreases** with increasing training size
   * usually $J_{train}$ **increases** with increasing training size 
   * $J_{cv} >> J_{train}$
@@ -260,20 +247,14 @@ fix high bias problems:
 
 * large NN have typically low bias 
 * recipe:
-
   * evaluate $J_{train}$ 
-
     * high $J_{train}$: increase NN (more layers, more neurons)
     * low $J_{train}$: evaluate $J_{cv}$
-  
       * high $J_{cv}$: add data, start over again
       * low $J_{cv}$: done
-
 * limitations:
-
   * large NN architectures require GPUS
   * more data sometimes expensive
-
 * large NN will usually do better than a smaller one of regularized
 
 
@@ -288,16 +269,12 @@ Adding data:
 
 * focus in results of error analysis
 * data augmentation:
-
   * mirror, enlarge, shrink, warping, ...
   * frequently applied in images classification, speech recognition
   * augmentation should be representative for unseen / test data 
-  
 * data synthesis:
-
   * use case: OCR (object character recognition)
   * create text in text editor and screenshot
-
 * model-centric approach: AI = **Code** + Data
 * code has been focused on heavily in the past
 * data-centric approach: AI = Code + **Data**
@@ -319,10 +296,8 @@ Adding data:
 * from training to production 
 * deploy plus monitor plus maintain
 * example
-
   * mobile app calls server via API
   * server returns predictions
-  
 * software engineering required for reliable predictions, for scaling, logging, 
 system monitoring, model updates
 * practice of deployment and system maintenance: MLOps
@@ -334,7 +309,6 @@ system monitoring, model updates
 stereotypes)
 * unethical: deep fakes, adverse use cases, spreading toxic speech, fake use cases
 * guidelines:
-
   * get a diverse team to brainstorm things that might go wrong (focus on harm)
   * literature search on guidelines for industry
   * audit systems against possible harms prior to deployment
@@ -365,3 +339,92 @@ Stopping criteria:
 * small purity improvements
 * number of units in a node
 
+Measuring purity:
+
+* entropy: $H(p_1)$ where $p_1$ is a fraction of a certain class A
+* entropy function $H = -p_1log_2(p_1)-p_0log_2(p_0)$ where $p_0=1-p_1$
+* also for entropy function we define $H=0$ if $p_0, p_1=0$
+
+```{r}
+#| label: entropy
+
+entropy = function(x){
+  -x * log2(x) - (1 - x) * log2(1 - x)
+}
+
+p1 = seq(0, to = 1, by = 0.01)
+
+H = entropy(p1)
+H[is.nan(H)] = 0
+
+plot(
+  p1
+  , H
+  , type = "l"
+)
+```
+
+* other metrics: Gini-coefficient
+* minimizing impurity is called **information gain**
+* process:
+  * start at root note and calculate entropy
+  * apply different splits (different features, different values)
+  * calculate entropy per split
+  * calculate weighted average
+  * information gain is reduction of entropy $H_0-H_1$ where $H_0$ is entropy 
+  at root level and $H_1$ is entropy at depth 1
+* definition of information gain: $H(p_1^{root})-(w^{left}H(p_1^{left})+w^{right}H(p_1^{right}))$
+* keep repeating splitting recursively until stopping criteria is met (100% one class, 
+max depth, information gain is below threshold, number of examples in note is 
+below threshold)
+
+
+Categorical features:
+
+* one hot encoding
+* convert categorical features to dummy or binary features
+* number of binary variables is equal to the number of labels of the categorical feature
+* one of these features is always **hot** (1)
+
+
+Numerical features:
+
+* sort training examples by value of numerical feature
+* try midpoints between successive examples
+
+
+Regression trees:
+
+* prediction is leaf node average
+* splitting criteria is reduction of (weighted) variance (like with entropy)
+
+
+Ensemble trees:
+
+* trees are sensible to changes in the training data
+* majority vote will be the prediction
+* bagged decision trees: sampling observations with replacement 
+* random forest: sampling observations with replacement, sample k features (k < n)
+* starting value for k is $k=\sqrt{n}$
+* sampling observations and features leads to de-correlation of trees
+* boosted decision tree XGBoost (eXtreme Gradient Boosting): like random forests, 
+but upweight misclassified observations during sampling instead of replacement
+* XGBoost also has a built-in regularization
+
+
+Algorithm properties:
+
+Decision trees, tree ensembles:
+
+* high performance on structured data (tables)
+* lower performance on unstrcutured data (images, video, audio, text)
+* faster to train
+* interpretable (for small trees)
+
+Neural networks:
+
+* similar performance like trees on structured data
+* outperform other models on unstructured data
+* slower to train
+* suited for transfer learning
+* better suited for complex systems of multiple models
