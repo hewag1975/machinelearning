@@ -1,0 +1,21 @@
+---
+title: "Notes unsupervised learning, recommenders, reinforcement learning"
+format: html
+editor: source
+editor_options: 
+  chunk_output_type: console
+engine: knitr
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+knitr::opts_knit$set(
+  root.dir = '~/Documents/repos/github/machinelearning'
+)
+```
+
+
+## Unsupervised learning
+
