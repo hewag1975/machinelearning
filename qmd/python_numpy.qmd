@@ -1,0 +1,120 @@
+---
+title: "Things to remember on numpy arrays"
+format: html
+editor: source
+editor_options: 
+  chunk_output_type: console
+engine: knitr
+execute: 
+  output: true
+---
+
+```{r}
+#| label: setup-r
+#| include: false
+
+knitr::opts_knit$set(
+  # root.dir = file.path(here::here(), "qmd")
+  root.dir = here::here()
+)
+
+# library(reticulate)
+# 
+# use_virtualenv(
+#   file.path(
+#     here::here()
+#     , ".venv"
+#   )
+# )
+```
+
+```{python}
+#| label: setup-python
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+methods = dir(np)
+[m for m in methods if m.startswith('log')]
+```
+
+
+## arrays
+
+### array dimensions
+
+* 0D array
+
+```{python}
+
+a0 = np.array(1)
+print('Example: ' + str(a0))
+print('Shape: ' + str(a0.shape))
+print('Dimension: ' + str(a0.ndim))
+```
+
+* 1D-array
+  * allow subsetting by index
+
+```{python}
+
+a1 = np.array([1, 2, 3, 4, 5])
+a1.ndim
+print('Example: ' + str(a1))
+print('Shape: ' + str(a1.shape))
+print('Dimension: ' + str(a1.ndim))
+```
+
+* 2D-array
+
+```{python}
+
+a2 = np.array([[1, 2, 10, 20], [3, 4, 30, 40]])
+print('Example: ' + str(a2))
+print('Shape: ' + str(a2.shape))
+print('Dimension: ' + str(a2.ndim))
+```
+
+```{python}
+
+print('Subsetting rows (first dimension): ', a2[0])
+print('Subsetting columns (second dimension): ', a2[:, 0])
+print('Subsetting rows and columns: ', a2[:1, :2])
+```
+
+* empty array
+
+```{python}
+
+a_empty = np.zeros((3, 10))
+print(a_empty)
+print(a_empty.shape)
+```
+
+
+### random numbers
+
+Draw from a normal distribution
+
+```{python}
+#| label: fig-normal-distribution
+#| fig-cap: "Sample from a normal distribution"
+#| fig-height: 5
+
+x = np.random.normal(0, scale = 2, size = 10000)
+
+plt.close()
+plt.hist(x, bins = 50)
+plt.title('sample from a normal distribution')
+plt.show()
+```
+
+
+### dot product
+
+```{python}
+
+help(np.dot)
+```
+
+
