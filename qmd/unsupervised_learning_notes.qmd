@@ -19,23 +19,174 @@ knitr::opts_knit$set(
 
 ## Unsupervised learning
 
-* clustering 
+* clustering
 * anomaly detection
 
+### Clustering: k-means
 
+* process overview:
+  * find n clusters
+  * random initial guess of $K$ cluster centroids
+  * iteratively assign observations to centroids and update centroids
+  * stopping criteria: number of iterations, location of centroids, number of 
+  observations changing cluster
+* distance is mathematically called L2 norm and written as $||x^i-\mu_k||$
+* assigning points to centroids: $min_k||x^i-\mu_k||^2$
+* move cluster centroids: $\mu_k:=mean(points_k)$
+* corner case: delete cluster of no points assigned to it 
+* cost function: $J(c^1, ..., c^m, \mu_1, ..., \mu_K)=\frac{1}{m}\Sigma_{i=1}^m||x^i-\mu_k||^2$, where 
+  * $c^i$: index of cluster to which $x^i$ is currently assigned
+  * $\mu_k$: cluster centroid k
+  * $\mu_{c^i}$: cluster centroid of cluster to which $x^i$ has been assigned
+* random initialization:
+  * choose $K<m$ ($m$ is number of training samples)
+  * randomly pick $K$ training examples
+  * set $\mu_1, ..., \mu_K$ equal to these examples
+* perform random initialization multiple times
+* pick from results using cost function $J$
+* choosing $k$:
+  * Elbow method: cost function $J$ as a function of $K$. Downside: right $K$ is ambiguous
+  * Purpose method: Evaluate $K$ based on later (downstream) purpose, recommended
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+X = np.random.uniform(size = 1000)
+X = X.reshape((250, 4))
+
+centroids = np.array([
+  [0.2, 0.2, 0.2, 0.2]
+  , [0.6, 0.6, 0.6, 0.6]
+])
+
+plt.close()
+plt.scatter(X[:, 0], y = X[:, 1], s = 5)
+plt.scatter(centroids[:, 0], y = centroids[:, 1], c = 'red', s = 50)
+plt.show()
+
+def get_closest_centroid(X, centroids):
+  
+  K = centroids.shape[0]
+  m = X.shape[0]
+  dm = np.zeros((m, K))
+
+  for i in range(K):
+    d = X - centroids[i]
+    d = abs(d)**2
+    d = np.sum(d, axis = 1)
+    dm[:, i] = d
+    
+  idx = np.argmin(dm, axis = 1)
+    
+  return idx
+
+
+def compute_centroids(X, idx, K):
+
+  m, n = X.shape
+  centroids = np.zeros((K, n))
+  
+  for i in range(K):
+    center = np.mean(X[idx == i,:], axis = 0)
+    centroids[i, :] = center
+  
+  return centroids
+```
+
+
+### Anomaly detection
+
+* density estimation, i.e. model probability of features $X$ from a number of 
+observations, i.e. define values of $x_1, x_2, ...$ with low and high probability
+* define level of acceptance $\epsilon$, identify new observations where 
+$p(x_{new})<\epsilon$
+* frequently used for/in 
+  * fraud detection, e.g. by web activity features or financial transaction features
+  * manufacturing, e.g. by using product features
+  * CPU monitoring in a data center, e.g. by using instance features
+* use Gaussian distribution with mean $\mu$ and variance $\sigma^2$
+* parameter estimation $\mu, \sigma$ from sample
+* density estimation: calculate probability of a specific feature set, which is 
+the product of the individual probabilities, e.g. 
+$p(X)=p(x_1; \mu_1, \sigma_1)*p(x_2; \mu_2, \sigma_2)* ... *p(x_n; \mu_n, \sigma_n)=\Pi_{j=1}^{n}p(x_j; \mu_j, \sigma_j)$
+
+Approach:
+* choose features that are indicative of anomalies
+* fit parameters $\mu$ and $\sigma$
+* given a new example, compute $p(x)=\Pi_{j=1}^{n}\frac{1}{\sqrt{2\pi}\sigma_j}e^{-\frac{(x_j-\mu_j)^2}{2\sigma_j^2}}$
+* anomaly if $p(x)<\epsilon$
+
+Evaluate anomaly detection system:
+* take a number of anomalous ($y=1$) and non-anomalous ($y=0$) observations 
+* typically $y=1$ will be (very) small
+* split data into training (mostly $y=0$), cross-validation and test set (both mixed)
+* train algorithm on training set
+* tune algorithm based on test set
+* evaluate algorithm based on test set
+* alternative in case of very few anomalies: skip test set
+* predict $y$ and evaluate, use e.g. precision and recall or F_1-score
+
+Anomaly detection versus supervised learning:
+* anomaly detection: very small number of positive examples and very large number 
+of negative examples, many different types of anomalies not seen earlier
+* supervised learning: large number of positive and negative examples, future 
+positive examples will be similar to the ones observed
+
+Feature building/selection:
+* verify that features are Gaussian or transform features to be Gaussian
+* common problem: $p(x)$ is similar for normal and anomalous examples
+* solution strategies: find new features (e.g. by combining existing features)
+
+
+```{python}
+
+X = np.random.uniform(size = 1000)
+X = X.reshape((500, 2))
+
+
+def estimate_gaussian(X): 
+    
+    mu = np.mean(X, axis = 0)
+    var = np.var(X, axis = 0)
+
+    return mu, var
+  
+
+p_val = np.random.uniform(size = 100)
+y_val = np.random.randint(0, high = 2, size = 100)
+  
+def select_threshold(y_val, p_val): 
+
+    best_epsilon = 0
+    best_F1 = 0
+    F1 = 0
+    
+    step_size = (max(p_val) - min(p_val)) / 1000
+    
+    for epsilon in np.arange(min(p_val), max(p_val), step_size):
+      
+        y_prd = np.int8(p_val < epsilon)
+        prec = sum(y_val * y_prd) / sum(y_prd)
+        rec = sum(y_val * y_prd) / sum(y_val)
+        F1 = 2 * prec * rec / (prec + rec)
+        
+        if F1 > best_F1:
+            best_F1 = F1
+            best_epsilon = epsilon
+        
+    return best_epsilon, best_F1
+```
 
 
 ## Recommender systems
 
-
-
+* collaborative filtering in case of item features available
+  * predict rating from item features by user
+  * minimize cost for all users simultaneously 
+* collaborative filtering in case of item features not available
 
 
 
 ## Reinforcement learning
-
-
-
-
-
 
