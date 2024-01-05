@@ -10,7 +10,7 @@ engine: knitr
 
 ## Introduction to regression
 
-Using the California housing dataset provided with `scikit-learn`.
+Using the California housing data set provided with `scikit-learn`.
 
 ```{python}
 import numpy as np
