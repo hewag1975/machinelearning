@@ -185,6 +185,27 @@ def select_threshold(y_val, p_val):
   * predict rating from item features by user
   * minimize cost for all users simultaneously 
 * collaborative filtering in case of item features not available
+  * assumption: model parameters are available
+  * guess set of feature values per record using a cost function
+  * $j$ users, $i$ examples (e.g. movies)
+  * features for movie $i$ can be obtained by minimizing: $J(x^i)=\frac{1}{2}\Sigma_{j:r(i,j)=1}(w^j*x^i+b^j-y^{(i, j)})^2+\frac{\lambda}{2}\Sigma_{k=1}^n(x_k^i)^2$
+  * sum over all movies: $\Sigma_{i=1}^{n}(J(x^i))$
+  * put together cost function to learn parameters and features
+  * cost function is $J(w, b, x)$
+* implementation recommendations:
+  * mean normalization, i.e. normalize per row
+  * gradient descent in tensorflow (auto-diff), finds derivative automatically 
+  by providing cost function
+* finding related items
+  * features $x^i$ are quite hard to interpret (obtained from minimizing $J$)
+  * still, features contain some information on the items
+  * i.e. items can be ranked with regards to similarity (distance)
+* issues with collaborative filtering:
+  * cold start problem (ranking new items with few ratings, new users)
+  * use side information on items and users, e.g. genre, movie stars for movies, 
+  demographics for users
+  
+
 
 
 
