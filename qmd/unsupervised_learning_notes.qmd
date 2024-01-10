@@ -181,6 +181,8 @@ def select_threshold(y_val, p_val):
 
 ## Recommender systems
 
+### Collaborative filtering
+
 * collaborative filtering in case of item features available
   * predict rating from item features by user
   * minimize cost for all users simultaneously 
@@ -205,6 +207,46 @@ def select_threshold(y_val, p_val):
   * use side information on items and users, e.g. genre, movie stars for movies, 
   demographics for users
   
+
+### Content-based filtering
+
+* collaborative filtering: recommendations based on ratings of users with similar 
+ratings, i.e. ratings are required
+* content-based filtering: recommendations based on features of users and items, 
+i.e. features are available, some ratings may be available
+* user features: demographics, behavior, preferences, ratings. Feature vector 
+$x_u^j$ for user $j$.
+* movie features: year, genre, reviews, average ratings. Feature vector 
+$x_m^i$ for movie $i$
+* task is to find out if a movie $i$ is a good match for user $j$
+* match users and movies
+* define $v_u^j$ is a vector of numbers computed from features $x_u^j$ of 
+user $j$, e.g. preferences for certain genres
+* define $v_m^i$ is a vector of numbers computed from features $x_m^i$ of 
+movie $i$, e.g. degree of match with a genre
+* calculate dot product of $v_m^j * v_u^j$ for a new movie to find out if it is 
+a good match.
+
+User network and movie network:
+
+* input: user features $x_u$ (user network) and movie features (feature network)
+* output: vectors $v_u$ and $v_m$
+* cost function: $J=\Sigma_{(i,j):r(i,j)=1}(v_u^j*v_m^i-y^{(i, j)}))^2+regularization$
+* $J$ will be optimized for users who gave ratings for certain movies
+
+Effective calculation:
+
+* retrieval step: 
+  * generate large list of plausible item candidates, e.g. similar 
+  movies to the last 10 movies watched by a user, top 10 movies of the most 
+  viewed genre, top movies in the users county
+  * combine retrieved items in a list, de-duplicate, remove items already 
+  watched/purchased
+* ranking step: rank retrieved list using the learned model, i.e. feed it into 
+the network and make prediction on user rating
+* offline experiments can help to determine the size of the retrieval list, i.e. 
+investigate if finally more relevant recommendations are added to the final list
+
 
 
 
