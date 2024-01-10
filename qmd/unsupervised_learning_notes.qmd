@@ -248,6 +248,27 @@ the network and make prediction on user rating
 investigate if finally more relevant recommendations are added to the final list
 
 
+### Principal component analysis
+
+* method for visualizing multidimensional data
+* normalize features to zero mean
+* choose an axis to capture major share of data variance (rotate around 0)
+* continue with axis 2, 3, ... on remaining variance (perpendicular)
+* other applications of PCA in the past:
+  * data compression 
+  * speedup training of supervised learning
+
+Steps:
+
+* feature scaling
+* fit data to PCA to obtain axes $z_1, z_2, ....$
+* in scikit-learn, mean normalization is included in fit-step
+* examine variance explained per component $z_i$
+* transform $x_1, x_2, ...$ to the new axes $z_1, z_2, ...$
+
+
+
+
 
 
 
