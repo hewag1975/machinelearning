@@ -1,0 +1,65 @@
+---
+title: "cloud practitioner essentials"
+format: html
+---
+
+
+
+
+AWS concepts:
+
+* basic client-server model
+* client (browser, desktop app): send requests 
+* server: validates request and returns answer
+* pay for what you need
+* 
+
+Cloud computing:
+
+* opposed to on-premise, hybrid
+* on-demand resources
+* over the internet 
+* pay-as-you-go pricing
+
+
+## Amazon Elastic Compute Cloud
+
+* highly flexible, cost-effective, quick
+* multitenancy: sharing underlying hardware between virtual machines
+* hypervisor is taking the role of allocating resources
+* vertical scaling: up- and down-scaling instances
+* compute-as-a-service
+* instance types are grouped by family: general purpose, compute optimized, 
+memory optimized, accelerated computing, storage optimized 
+* pricing: on-demand, savings plan, reserved instances, spot instance, 
+dedicated hosts
+* scalability, i.e. automatically respond to changes in demand (scale up, 
+scale out, scale in), service is called EC2 Auto Scaling, dynamic scaling, 
+predictive scaling
+* elasticity, elastic load balancing takes requests and routes them to a free 
+instance
+* messaging ad queuing, services AWS SQS 
+(simple queue service) and AWS SNS (simple notification service)
+* monolothic application (tight coupling, failure of one application component 
+will cause others to fail) versus microservices (loosely coupled architecture, 
+single failure will not crash other applications)
+
+Additional compute services:
+
+* serverless compute: underlying instance is not accessible, i.e. the entire 
+ressource management is done by AWS
+* AWS lambda: upload code to lambda function, code has to run under 15 mins, 
+no instance maintenance work
+* AWS elastic container service ECS (on top of EC2)
+* AWS elastic kubernetes service EKS (on top of EC2)
+* AWS fargate: serverless compute platform for running ECS or EKS
+* secanrios:
+  * traditional applications, access to OS: EC2
+  * short running function, event-driven or service oriented: Lambda
+  * container based applications: ECS or EKS on top of either EC2 or Fargate
+
+
+
+
+
+
