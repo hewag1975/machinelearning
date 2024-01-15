@@ -283,6 +283,7 @@ optimally afterwards
 * Bellman equation in terminal state: $Q(s,a)=R(s)$
 * stochastic environments, calculate expected return, i.e. average of * $Q(s,a)$ 
 in case of many iterations
+* replay buffer: store latest 10,000 tuples
 
 Continuous state spaces:
 
@@ -290,14 +291,39 @@ Continuous state spaces:
 * in many applications state $s$ is described by multiple parameters, i.e. by a 
 vector of numbers (e.g. car, helicopter)
 
-Deep reinforcement learning:
+Deep reinforcement learning (aka deep Q-learning):
 
 * input: state-action-pair
 * output: state-value-function for all actions, pick action that maximizes $Q(s,a)$
 * formals: $x=Q(s,a); y=R(s)+\gamma*max_{a'}Q(s',a')$
 * objective of NN is to map $Q(s,a)$ to $y$
 * training set: create tuples of many state-action-combinations
+* improved architecture: input is only state, output is state-action-value equation 
+for all actions
+* $\epsilon$-greedy-policy: 
+  * approach to choose actions while still learning
+  * in some state $s$ with a prob of 0.95 pick the action that maximizes $Q(s,a)$
+  * in some state $s$ with a prob of 0.05 ($\epsilon$) pick an action randomly
+  * background is that while learning even the actions that do not maximize $Q(s,a)$ 
+  must be explored
 
+Mini batches:
 
+* batch: use full training data $m$ set during model training
+* in case of large training set, using a subset $m'$ may speed up training
+* mini batch approach uses a different subset per iteration
+
+Soft update:
+
+* example linear regression, instead of updating $w, b$ after every iteration, set
+  * $w=0.01*w_{new}+0.99*w$
+  * $b=0.01*b_{new}+0.99*b$
+* convergence of reinforcement algorithm is more reliable with soft update
+
+State of reinforcement learning:
+
+* RI algorithms are much easier to implement in a simulation environment than in 
+a real robot
+* fewer RI applications than supervised and unsupervised learning
 
 
