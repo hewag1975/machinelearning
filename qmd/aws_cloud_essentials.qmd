@@ -4,7 +4,7 @@ format: html
 ---
 
 
-
+## M1: Introduction to AWS
 
 AWS concepts:
 
@@ -22,7 +22,7 @@ Cloud computing:
 * pay-as-you-go pricing
 
 
-## Amazon Elastic Compute Cloud
+## M2: Amazon Elastic Compute Cloud
 
 * highly flexible, cost-effective, quick
 * multitenancy: sharing underlying hardware between virtual machines
@@ -59,7 +59,100 @@ no instance maintenance work
   * container based applications: ECS or EKS on top of either EC2 or Fargate
 
 
+## M3: Global infrastructure
 
+* fault tolerance, high availability
+* regions: data centers in large groups
+* multiple data centers per region
+* regions are connected by high speed fiber network
+* data does not leave region unless explicitly requested
+* decision for a specific region:
+  * compliance and regulatory needs
+  * proximity
+  * feature availability
+  * pricing
+
+* setup per region:
+  * availability zone (AZ): one or more discrete data center
+  * fault tolerant apps need to run on multiple instances in different AZ
+  * some services are set up per region (e.g. ELB, SQS, SNS)
+
+* edge location: a site where Amazon CloudFront is used to cache copies of 
+content closer to customer locations
+* outposts: mini region set up by AWS in an own data center
+
+Provisioning of AWS resources:
+
+* AWS Management console
+* AWS CLI
+* AWS SDKs (interaction through programming languages)
+* AWS Elastic Beanstalk: build environments through configuration scripts
+* AWS CloudFormation: infrastructure as code (YML, JSON)
+
+
+## M4: Networking
+
+* AWS VPC: private or public facing resources
+* IP range for resources inside VPC
+* allocate resources to subnets (group of resources based on security or 
+operational needs)
+* public subnet: 
+  * publicly available
+  * public internet gateway
+* private subnet: 
+  * privately available
+  * virtual private gateway, approved access (VPN)
+* AWS direct connect: direct and dedicated connection from a corporate data 
+center to AWS cloud, not via public internet
+* network access control list (ACL): Control access to VPC subnet
+* instance network level security: Security groups (inbound, outbone)
+* security group is stateful (has a memory), network ACL is stateless
+
+Global networking:
+
+* DNS: Domain name system (map websites to IP addresses)
+* AWS DNS is called Amazon Route 53
+* Domain names can be purchased in Route 53
+* Traffic can be directed based on different policies (e.g. based on geolocation)
+* Amazon cloud front: send requests to nearest edge location
+
+
+## M5: Storage and databases
+
+* Amazon EC2: Access to CPU, memory, network, storage
+* Amazon EBS: Block-level storage (like a hard drive), files is broken down into 
+blocks
+* Types of hard-drives: 
+  * Instance store: Temporary block-level storage (physically attached to host), 
+  data is lost if instance is terminated
+  * Amazon Elastic Block Storage (EBS): Persistent block-level storage 
+  (physically separated from host)
+  * Snapshots: Incremental backups of EBS volumes
+* Amazon S3: Data store, data is stored as objects in buckets
+* Objects contain data, metadata, key
+* S3 static website hosting 
+* Various S3 storage classes available:
+  * S3 standard: frequent access, stored in at least 3 availability zones
+  * S3 standard-infrequent access: stored in 3+ availability zones
+  * S3 standard-one zone infrequent access: stored in 1 availability zones
+  * S3 intelligent-tiering
+  * S3 glacier instant retrieval
+  * S3 glacier flexible retrieval
+  * S3 glacier deep archive
+  * data can migrate between storage type by a lifecycle policy
+
+* Amazon Elastic File System: shared file system 
+* multiple instances can access the data at the same time
+* Amazon EBS are attached to single availability zones
+* Amazon EFS is a regional service, i.e. multiple instances from different 
+availability zone in the same region can R/W at the same time
+  
+* Relational databases store data in related tables using SQL
+* Amazon Relational Database Service (RDS) runs databases in the AWS cloud
+* automated hardware provisioning, database setup, patching, backups
+* Amazon RDS is available on six engines: Amazon Aurora, PostgreSQL, MySQL, 
+MariaDB, Oracle Database, Microsoft SQL Server
+* lift-and-shift: migrate on-premise DB to AWS
 
 
 
