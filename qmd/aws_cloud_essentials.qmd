@@ -153,6 +153,15 @@ availability zone in the same region can R/W at the same time
 * Amazon RDS is available on six engines: Amazon Aurora, PostgreSQL, MySQL, 
 MariaDB, Oracle Database, Microsoft SQL Server
 * lift-and-shift: migrate on-premise DB to AWS
+* AWS Dynamo DB: serverless DB, non-relational (aka NoSQL) database, 
+purpose built, millisecond response time, fully managed, highly scaleable
+* Amazon Redshift: Data warehousing as a service, big data BI solutions
+* Amazon Database Migration Service (DMS): homogeneous in case of same 
+type of database for source and target, heterogeneous otherwise (the using
+Amazon schema conversion tool)
+* Other tools: Amazon DocumentDB, Amazon Neptune (graph database), 
+Amazon Managed Blockchain, Amazon Quantum Ledger Database, database accelerators 
+(e.g. Amazon ElastiCache. Amazon DynamoDB accelerator)
 
 
-
+## M6: Security
