@@ -165,3 +165,28 @@ Amazon Managed Blockchain, Amazon Quantum Ledger Database, database accelerators
 
 
 ## M6: Security
+
+* shared responsibility model (AWS, customer)
+* AWS: security of the cloud
+* customer: security in the cloud
+* AWS Identity and Access Management (IAM), Users, groups, policies, roles
+* AWS Organizations: centralized management of accounts, consolidated billing, 
+hierarchical grouping of accounts, service control policies (SCP) can manage 
+access to accounts or groups of accounts (organizational unit)
+* AWS Artifacts: Access to security and compliance reports of various audits
+* DDoS: Distributed denial-of-service attacks, attacker tries to overwhelm an 
+application using other internet resources (bots, servers, ...). 
+* AWS Shield can protect applications against DDoS 
+* AWS Key Management Service (AWS KMS): encryption at rest, encryption in 
+transit
+* AWS web application firewall (WAF): Monitor network requests and block 
+IP addresses known as being malicious
+* Amazon Inspector: Automated security assessments 
+* Amazon GuardDuty: Service to monitor network activity and detect threats 
+intelligently
+
+
+
+
+
+
