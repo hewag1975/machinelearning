@@ -1,0 +1,199 @@
+---
+title: "Forecasting with Generalized Additive Models (GAMs) in R"
+subtitle: "Workshop for Forecasting for Social Good"
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r}
+#| label: setup-r
+
+# install.packages("COVID19")
+# library(COVID19)
+library(data.table)
+library(mgcv)
+
+covid = readr::read_csv(
+  "https://raw.githubusercontent.com/nrennie/f4sg-gams/main/data/covid.csv"
+) |> 
+  as.data.table()
+
+setorder(covid, iso_alpha_3, date)
+```
+
+
+## Introduction
+
+* GAM: sum of smoothed functions of expl. variables
+* smooth function may be of any form: linear, quadratic, ...
+* packages: `mgcv`, `gam`
+
+```{r}
+
+# sbs = covid[iso_alpha_3 == "FRA"]
+sbs = covid[iso_alpha_3 == "GBR"]
+
+train = sbs[1:ceiling(0.8 * nrow(sbs))]
+test = sbs[ceiling(0.8 * nrow(sbs)):nrow(sbs)]
+
+plot(
+  confirmed ~ date
+  , data = train
+  , type = "l"
+)
+
+plot(
+  confirmed ~ tests
+  , data = train
+  , pch = 19
+  , cex = 0.2
+)
+```
+
+* w/o smooth function, gam is equivalent to linear model
+
+```{r}
+lm_gam = gam(
+  confirmed ~ date_obs
+  , data = train
+)
+
+plot(
+  confirmed ~ date
+  , data = train
+  , type = "l"
+)
+
+lines(
+  train$date
+  , y = lm_gam$fitted.values
+  , col = "red"
+)
+```
+
+* fit smooth function
+
+```{r}
+lm_gam = gam(
+  confirmed ~ s(date_obs)
+  , data = train
+)
+
+# summary(lm_gam)
+# plot(lm_gam)
+# plot(
+#   lm_gam$fitted.values
+#   , type = "l"
+# )
+
+plot(
+  confirmed ~ date
+  , data = train
+  , type = "l"
+)
+
+lines(
+  train$date
+  , y = lm_gam$fitted.values
+  , col = "red"
+)
+```
+
+* fit smooth function + covars
+
+```{r}
+lm_gam = gam(
+  confirmed ~ s(date_obs) + s(day, k = 7)
+  , data = train
+)
+
+lm_gam = gam(
+  confirmed ~ s(date_obs, sp = 0.01)
+  , data = train
+)
+
+lm_gam = gam(
+  confirmed ~ s(date_obs) + s(day, k = 7)
+  , data = train
+  , method = "REML"
+)
+
+# summary(lm_gam)
+# plot(lm_gam)
+# plot(
+#   lm_gam$fitted.values
+#   , type = "l"
+# )
+
+plot(
+  confirmed ~ date
+  , data = train
+  , type = "l"
+)
+
+lines(
+  train$date
+  , y = lm_gam$fitted.values
+  , col = "red"
+)
+```
+
+* plotting GAMs with `gratia`
+
+```{r}
+# install.packages("gratia")
+library(gratia)
+draw(lm_gam)
+
+```
+
+```{r}
+sbs = covid[iso_alpha_3 == "FRA"]
+sbs = covid[iso_alpha_3 == "GBR"]
+
+train = sbs[1:ceiling(0.8 * nrow(sbs))]
+test = sbs[ceiling(0.8 * nrow(sbs)):nrow(sbs)]
+
+lm_gam = gam(
+  confirmed ~ s(date_obs) + s(day, k = 7)
+  , data = train
+  , method = "REML"
+)
+
+draw(lm_gam)
+```
+
+* AIC to evaluate adding of more variables
+
+```{r}
+AIC(lm_gam)
+
+gam.check(lm_gam)
+```
+
+* predictions
+
+```{r}
+
+prd = predict(lm_gam, newdata = test)
+
+plot(
+  confirmed ~ date
+  , data = test
+  , type = "l"
+)
+
+lines(
+  test$date
+  , y = prd
+  , col = "red"
+)
+
+```
+
+
+## Ressources
+
+* [GitHub repo](https://github.com/nrennie/f4sg-gams)
