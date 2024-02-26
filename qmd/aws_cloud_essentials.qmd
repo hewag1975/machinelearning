@@ -40,7 +40,7 @@ predictive scaling
 instance
 * messaging ad queuing, services AWS SQS 
 (simple queue service) and AWS SNS (simple notification service)
-* monolothic application (tight coupling, failure of one application component 
+* monolithic application (tight coupling, failure of one application component 
 will cause others to fail) versus microservices (loosely coupled architecture, 
 single failure will not crash other applications)
 
@@ -53,7 +53,7 @@ no instance maintenance work
 * AWS elastic container service ECS (on top of EC2)
 * AWS elastic kubernetes service EKS (on top of EC2)
 * AWS fargate: serverless compute platform for running ECS or EKS
-* secanrios:
+* scenarios:
   * traditional applications, access to OS: EC2
   * short running function, event-driven or service oriented: Lambda
   * container based applications: ECS or EKS on top of either EC2 or Fargate
@@ -186,7 +186,19 @@ IP addresses known as being malicious
 intelligently
 
 
+## M7: Monitoring and analyfics
+
+* Amazon CloudWatch: metrics, thresholds, dashboards, alarms
+* AWS CloudTrail: API auditing tools, every request gets logged
+* AWS Trust Advisor: Advisor on cost optimization, performance, security, fault 
+tolerance, service limits
 
 
+## M8: Pricing and support
+
+* AWS Free Tier
+* AWS Pricing Concepts
+* Billing Dashboard
+* Consolidated billing per organization
 
 
